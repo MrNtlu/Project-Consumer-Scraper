@@ -1,0 +1,23 @@
+{
+  "name": "consumer-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.0.3",
+    "fs": "^0.0.1-security",
+    "gunzip-file": "^0.1.1",
+    "mongoose": "^7.0.1",
+    "ndjson-parse": "^1.0.4",
+    "nodejs-file-downloader": "^4.10.6",
+    "puppeteer": "^19.7.3",
+    "request-promise": "^4.2.6"
+  }
+}
