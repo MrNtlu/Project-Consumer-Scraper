@@ -58,7 +58,7 @@ const MovieModel = mongoose.model(
         tmdbVoteCount: Number,
         productionCompanies: [productionAndCompanySchema],
         releaseDate: String,
-        genres: genreSchema,
+        genres: [genreSchema],
         streaming: [streamingSchema],
         createdAt: Date,
     }, {
@@ -83,7 +83,7 @@ const TVSeriesModel = mongoose.model(
         totalEpisodes: Number,
         productionCompanies: [productionAndCompanySchema],
         firstAirDate: String,
-        genres: genreSchema,
+        genres: [genreSchema],
         streaming: [streamingSchema],
         networks: [productionAndCompanySchema],
         seasons: [
