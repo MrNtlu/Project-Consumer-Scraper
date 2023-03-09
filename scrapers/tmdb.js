@@ -3,35 +3,39 @@ const gunzip = require("gunzip-file");
 const Downloader = require("nodejs-file-downloader");
 const { tmdbFileBaseURL, tmdbFileExtension } = require("../constants");
 const ndjsonParser = require("ndjson-parse");
+const { GetMovies, GetTVSeries } = require("../apis/tmdb");
 
 const today = new Date();
 const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
 const day = (today.getUTCDate() - 1 < 10) ? '0' + (today.getUTCDate() - 1) : today.getUTCDate() - 1;
 const year = today.getUTCFullYear();
 
-const movieDownloadURL = "movie_ids_" + month + "_" + day + "_" + year + tmdbFileExtension;
-const tvSeriesDownloadURL = "tv_series_ids_" + month + "_" + day + "_" + year + tmdbFileExtension;
-const downloadURLList = [movieDownloadURL, tvSeriesDownloadURL];
+const movieDownloadURL = `movie_ids_${month}_${day}_${year}${tmdbFileExtension}`;
+const tvSeriesDownloadURL = `tv_series_ids_${month}_${day}_${year}${tmdbFileExtension}`;
+const downloadURLList = [tvSeriesDownloadURL, movieDownloadURL];
+const downloadFolder = "downloads"
+const movieDownloadPath = `./${downloadFolder}/${movieDownloadURL.replace(".gz", '')}`
 
+const pathList = [];
 async function downloadFile() {
-    if (fs.existsSync("downloads")) {
-        fs.rmSync("downloads", { recursive: true });
+    if (fs.existsSync(downloadFolder)) {
+        fs.rmSync(downloadFolder, { recursive: true });
 
         console.log("Previous files deleted successfully.");
     }
 
-    var pathList = [];
+
     for (const url of downloadURLList) {
         console.log("Download starting for: ", url);
         const downloader = new Downloader({
             url: tmdbFileBaseURL + url,
-            directory: "./downloads",
+            directory: "./" + downloadFolder,
             cloneFiles: false,
         });
 
         try {
             const { _, downloadStatus } = await downloader.download();
-            const path = "./downloads/" + url;
+            const path = "./" + downloadFolder + "/" + url;
 
             console.log("Download status:", downloadStatus);
             pathList.push(path);
@@ -41,30 +45,47 @@ async function downloadFile() {
     }
 
     pathList.forEach(async path => {
-        await extractFile(path);
+        extractFile(path);
     });
 }
 
-async function extractFile(filePath) {
-    gunzip(filePath, filePath.replace(".gz", ''), function() {
-        console.log("Extracted successfully.");
+function extractFile(filePath) {
+    gunzip(filePath, filePath.replace(".gz", ''), async function () {
+        console.log("Extracted successfully.", filePath);
 
-        readFile(filePath.replace(".gz", ''));
+        // This check is required for sync.
+        // Without this check it loops both movie and tv series at the same time.
+        if (filePath.replace(".gz", '') != movieDownloadPath) {
+            await readFile(pathList[0].replace(".gz", ''), false)
+            await readFile(pathList[1].replace(".gz", ''), true)
+        }
     })
 }
 
-async function readFile(filePath) {
+async function readFile(filePath, isMovie) {
     console.log("Reading file", filePath);
 
     var text = fs.readFileSync(filePath).toString('utf-8');
-    const parsedNdJson = ndjsonParser(text);
-    console.log(parsedNdJson[0].id);
+    const parsedNdJsonList = ndjsonParser(text);
+    console.log("Total items:", parsedNdJsonList.length);
 
-    // var data = fs.readFileSync(filePath);
-    // var parsedJSON = JSON.parse(data);
-    // for (let index = 0; index < parsedJSON.length; index++) {
-    //     console.log(array[index]);
-    // }
+    if (isMovie) {
+        console.log("Movie fetch started.");
+
+        for (let index = 0; index < parsedNdJsonList.length; index++) {
+            await GetMovies(parsedNdJsonList[index].id);
+        }
+
+        console.log("Movie fetch Ended.");
+    } else {
+        console.log("TVSeries fetch started.");
+
+        for (let index = 0; index < parsedNdJsonList.length; index++) {
+            await GetTVSeries(parsedNdJsonList[index].id);
+        }
+
+        console.log("TVSeries fetch ended.");
+    }
 }
 
 module.exports.DownloadFile = downloadFile;
