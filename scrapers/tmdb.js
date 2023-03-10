@@ -1,9 +1,10 @@
 const fs = require("fs");
 const gunzip = require("gunzip-file");
 const Downloader = require("nodejs-file-downloader");
-const { tmdbFileBaseURL, tmdbFileExtension } = require("../constants");
+const { tmdbFileBaseURL, tmdbFileExtension, sleep } = require("../constants");
 const ndjsonParser = require("ndjson-parse");
 const { GetMovies, GetTVSeries } = require("../apis/tmdb");
+const { MovieModel, TVSeriesModel } = require("../mongodb");
 
 const today = new Date();
 const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
@@ -24,18 +25,17 @@ async function downloadFile() {
         console.log("Previous files deleted successfully.");
     }
 
-
     for (const url of downloadURLList) {
         console.log("Download starting for: ", url);
         const downloader = new Downloader({
             url: tmdbFileBaseURL + url,
-            directory: "./" + downloadFolder,
+            directory: `./${downloadFolder}`,
             cloneFiles: false,
         });
 
         try {
             const { _, downloadStatus } = await downloader.download();
-            const path = "./" + downloadFolder + "/" + url;
+            const path = `./${downloadFolder}/${url}`;
 
             console.log("Download status:", downloadStatus);
             pathList.push(path);
@@ -47,18 +47,18 @@ async function downloadFile() {
     pathList.forEach(async path => {
         extractFile(path);
     });
+
+    await sleep(3000);
+
+    await Promise.all([
+        readFile(pathList[0].replace(".gz", ''), false),
+        readFile(pathList[1].replace(".gz", ''), true)
+    ])
 }
 
 function extractFile(filePath) {
     gunzip(filePath, filePath.replace(".gz", ''), async function () {
         console.log("Extracted successfully.", filePath);
-
-        // This check is required for sync.
-        // Without this check it loops both movie and tv series at the same time.
-        if (filePath.replace(".gz", '') != movieDownloadPath) {
-            await readFile(pathList[0].replace(".gz", ''), false)
-            await readFile(pathList[1].replace(".gz", ''), true)
-        }
     })
 }
 
@@ -67,24 +67,43 @@ async function readFile(filePath, isMovie) {
 
     var text = fs.readFileSync(filePath).toString('utf-8');
     const parsedNdJsonList = ndjsonParser(text);
-    console.log("Total items:", parsedNdJsonList.length);
+    console.log(`Total ${isMovie ? "movie" : "tv series"} items: `, parsedNdJsonList.length);
 
     if (isMovie) {
         console.log("Movie fetch started.");
 
+        const movieList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            await GetMovies(parsedNdJsonList[index].id);
+            const movieModel = await GetMovies(parsedNdJsonList[index].id);
+
+            if (movieModel != null) {
+                movieList.push(movieModel);
+            }
         }
 
         console.log("Movie fetch Ended.");
+        if (movieList.length > 0) {
+            console.log(`Inserting ${movieList.length} number of items to Movie DB.`);
+            await MovieModel.deleteMany({});
+            await MovieModel.insertMany(movieList);
+        }
     } else {
         console.log("TVSeries fetch started.");
 
+        const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            await GetTVSeries(parsedNdJsonList[index].id);
+            const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
+            if (tvModel != null) {
+                tvSeriesList.push(tvModel);
+            }
         }
 
         console.log("TVSeries fetch ended.");
+        if (tvSeriesList.length > 0) {
+            console.log(`Inserting ${tvSeriesList.length} number of items to TVSeries DB.`);
+            await TVSeriesModel.deleteMany({});
+            await TVSeriesModel.insertMany(tvSeriesList);
+        }
     }
 }
 

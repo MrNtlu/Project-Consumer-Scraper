@@ -102,7 +102,82 @@ const TVSeriesModel = mongoose.model(
     }
 ));
 
+const animeNameURLSchema = mongoose.Schema({
+    name: String,
+    url: String,
+})
+
+const animeGenreSchema = mongoose.Schema({
+    name: String,
+    url: String,
+    malID: Number,
+})
+
+const animeRelationSchema = mongoose.Schema({
+    malID: Number,
+    type: String,
+    name: String,
+    redirectURL: String,
+})
+
+const AnimeModel = mongoose.model(
+    "animes",
+    mongoose.Schema({
+        titleOriginal: String,
+        titleEn: String,
+        titleJP: String,
+        description: String,
+        imageURL: String,
+        smallImageURL: String,
+        malID: Number,
+        malScore: Number,
+        malScoredBy: Number,
+        trailer: {
+            type: String,
+            required: false,
+            default: null
+        },
+        type: String,
+        source: String,
+        episodes: Number,
+        season: {
+            type: String,
+            required: false,
+        },
+        year: {
+            type: Number,
+            required: false,
+        },
+        status: String,
+        isCurrentlyAiring: Boolean,
+        streaming: [animeNameURLSchema],
+        aired: mongoose.Schema({
+            from: String,
+            to: String,
+            fromDay: Number,
+            fromMonth: Number,
+            fromYear: Number,
+            toDay: Number,
+            toMonth: Number,
+            toYear: Number,
+        }),
+        ageRating: String,
+        producers: [animeNameURLSchema],
+        studios: [animeNameURLSchema],
+        genres: [animeGenreSchema],
+        themes: [animeGenreSchema],
+        demographics: [animeGenreSchema],
+        relations: [
+            mongoose.Schema({
+                relation: String,
+                source: [animeRelationSchema],
+            })
+        ],
+    })
+)
+
 module.exports.MovieModel = MovieModel;
 module.exports.TVSeriesModel = TVSeriesModel;
+module.exports.AnimeModel = AnimeModel;
 module.exports.ConnectToMongoDB = connectToMongoDB;
 module.exports.DisconnectFromMongoDB = disconnectFromMongoDB;

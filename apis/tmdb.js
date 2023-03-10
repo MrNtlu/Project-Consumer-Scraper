@@ -86,10 +86,10 @@ async function getTVSeries(tvID) {
             created_at: new Date()
         })
 
-        console.log("\nTVSeries parsed.\n", tempTVModel);
+        return tempTVModel;
     } catch (error) {
         console.log("Error occured", error);
-        return;
+        return null;
     }
 }
 
@@ -147,10 +147,10 @@ async function getMovies(movieID) {
             created_at: new Date()
         })
 
-        console.log("\nMovie parsed.\n", tempMovieModel);
+        return tempMovieModel;
     } catch (error) {
         console.log("Error occured", error);
-        return;
+        return null;
     }
 }
 
