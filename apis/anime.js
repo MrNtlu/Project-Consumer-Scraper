@@ -60,7 +60,7 @@ async function getAnimeList() {
             await getAnimeList();
         }
     } catch (error) {
-        console.log("Error occured", error);
+        console.log("Anime error occured", error);
         return;
     }
 }

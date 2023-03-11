@@ -18,7 +18,7 @@ const downloadFolder = "downloads"
 const movieDownloadPath = `./${downloadFolder}/${movieDownloadURL.replace(".gz", '')}`
 
 const pathList = [];
-async function downloadFile() {
+async function startMovieFileDownload() {
     if (fs.existsSync(downloadFolder)) {
         fs.rmSync(downloadFolder, { recursive: true });
 
@@ -107,4 +107,4 @@ async function readFile(filePath, isMovie) {
     }
 }
 
-module.exports.DownloadFile = downloadFile;
+module.exports.StartMovieFileDownload = startMovieFileDownload;

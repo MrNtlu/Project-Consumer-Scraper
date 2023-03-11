@@ -3,11 +3,13 @@ const { tmdbBaseMovieAPIURL, tmdbBaseImageURL, tmdbBaseTVSeriesAPIURL } = requir
 const { MovieModel, TVSeriesModel } = require("../mongodb");
 require('dotenv').config()
 
+const tmdbAPIKey = process.env.TMDB_API_KEY;
+
 async function getTVSeries(tvID) {
     console.log("Fetch started with tv ID:", tvID);
 
-    const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
-    const streamingMovieAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
+    const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
+    const streamingMovieAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const result = await request(tvAPI);
 
     try {
@@ -66,7 +68,7 @@ async function getTVSeries(tvID) {
             }
         }
 
-        var tempTVModel = TVSeriesModel({
+        const tempTVModel = TVSeriesModel({
             titleOriginal: jsonData['original_name'],
             titleEn: jsonData['name'],
             description: jsonData['overview'],
@@ -88,7 +90,7 @@ async function getTVSeries(tvID) {
 
         return tempTVModel;
     } catch (error) {
-        console.log("Error occured", error);
+        console.log("TVSeries error occured", error);
         return null;
     }
 }
@@ -127,7 +129,7 @@ async function getMovies(movieID) {
             });
         }
 
-        var tempMovieModel = MovieModel({
+        const tempMovieModel = MovieModel({
             titleOriginal: jsonData['original_title'],
             titleEn: jsonData['title'],
             description: jsonData['overview'],
@@ -149,7 +151,7 @@ async function getMovies(movieID) {
 
         return tempMovieModel;
     } catch (error) {
-        console.log("Error occured", error);
+        console.log("Movie error occured", error);
         return null;
     }
 }
@@ -211,7 +213,7 @@ function parseStreamingJsonData(result) {
 
         return streamingList.length > 0 ? streamingList : null;
     } catch (error) {
-        console.log("Error occured", error);
+        console.log("Streaming parse error occured", error);
         return null;
     }
 }
