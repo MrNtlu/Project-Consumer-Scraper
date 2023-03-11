@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.0.3",
     "fs": "^0.0.1-security",
     "gunzip-file": "^0.1.1",
@@ -18,7 +17,6 @@
     "ndjson-parse": "^1.0.4",
     "nodejs-file-downloader": "^4.10.6",
     "perf_hooks": "^0.0.1",
-    "puppeteer": "^19.7.3",
     "request-promise": "^4.2.6"
   }
 }

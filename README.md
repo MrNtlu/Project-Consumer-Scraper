@@ -4,11 +4,9 @@
 
 <ul>
     <li> Mongoose
-    <li> Cheerio
     <li> dotenv
-    <li> Puppeteer
-    <li> Puppeteer-Extra
     <li> Gunzip-file
     <li> ndjson
     <li> nodejs-file-downloader
+    <li> perf_hooks
 </ul>
