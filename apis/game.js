@@ -1,14 +1,36 @@
 const request = require("request-promise");
-const { rawgBaseURL } = require("../constants");
+const { rawgBaseURL, sleep } = require("../constants");
 const { GameModel } = require("../mongodb");
 require('dotenv').config()
 
-const rawgAPIKey = process.env.RAWG_API_KEY;
+const rawgAPIKeyList = [
+    process.env.RAWG_API_KEY,
+    process.env.RAWG_ALT_API_KEY,
+    process.env.RAWG_ALT_2_API_KEY,
+    process.env.RAWG_ALT_3_API_KEY,
+    process.env.RAWG_ALT_4_API_KEY,
+];
+var rawgAPIKey = process.env.RAWG_API_KEY;
+var apiKeyPointer = 0;
+
 const gameIDList = [];
 var relatedGamesList = [];
 var page = 1;
 var upcomingPage = 1;
 var relatedPage = 1;
+
+function changeAPIKey() {
+    apiKeyPointer += 1;
+    rawgAPIKey = rawgAPIKeyList[apiKeyPointer];
+    console.log("API Key changed.", apiKeyPointer);
+}
+
+async function satisfyRateLimiting(endTime, startTime) {
+    if (endTime - startTime < 750) {
+        const sleepTimeInMillis = 751 - (endTime - startTime);
+        await sleep(sleepTimeInMillis);
+    }
+}
 
 async function startGameRequests() {
     await getGameList();
@@ -35,10 +57,22 @@ async function startGameRequests() {
 }
 
 async function getGameList() {
-    console.log("Game IDList fetch started for ", page);
+    const startTime = performance.now();
 
     const gameAPI = `${rawgBaseURL}games?page=${page}&key=${rawgAPIKey}&metacritic=1,100&parent_platforms=1,2,3,6,7`;
-    const result = await request(gameAPI);
+
+    let result;
+    try {
+        result = await request(gameAPI);
+    } catch (error) {
+        console.log("\nGame request error occured", page, error);
+        await sleep(1500);
+        await getGameList();
+        return;
+    }
+
+    const endTime = performance.now();
+    await satisfyRateLimiting(endTime, startTime);
 
     try {
         const jsonData = JSON.parse(result);
@@ -61,7 +95,7 @@ async function getGameList() {
 }
 
 async function getUpcomingGameList() {
-    console.log("Upcoming Game IDList fetch started for ", upcomingPage);
+    const startTime = performance.now();
 
     const date = new Date();
     const today = date.toISOString().slice(0, 10);
@@ -72,7 +106,19 @@ async function getUpcomingGameList() {
     const nextYear = new Date(year + 1, month, day).toISOString().slice(0, 10);
 
     const upcomingGameAPI = `${rawgBaseURL}games?page=${upcomingPage}&key=${rawgAPIKey}&dates=${today},${nextYear}&parent_platforms=1,2,3,6,7`;
-    const result = await request(upcomingGameAPI);
+
+    let result;
+    try {
+        result = await request(upcomingGameAPI);
+    } catch (error) {
+        console.log("\nUpcoming Game request error occured", upcomingPage, error);
+        await sleep(1500);
+        await getUpcomingGameList();
+        return;
+    }
+
+    const endTime = performance.now();
+    await satisfyRateLimiting(endTime, startTime);
 
     try {
         const jsonData = JSON.parse(result);
@@ -100,12 +146,54 @@ async function getGameDetails(rawgID) {
     const gameDetailsAPI = `${baseDetailsAPI}?key=${rawgAPIKey}`
     const storesAPI = `${baseDetailsAPI}/stores?key=${rawgAPIKey}`
 
+    let detailsResult;
+    let storesResult;
+    try {
+        const startTime = performance.now();
 
-    const [detailsResult, storesResult] = await Promise.all([
-        request(gameDetailsAPI),
-        request(storesAPI),
-        getRelatedGames(rawgID),
-    ]);
+        [detailsResult, storesResult] = await Promise.all([
+            request(gameDetailsAPI),
+            request(storesAPI),
+        ]);
+
+        const endTime = performance.now();
+        await satisfyRateLimiting(endTime, startTime);
+    } catch (error) {
+        if (error.error != null) {
+            try {
+                const jsonError = JSON.parse(error.error);
+
+                if (jsonError['detail'] != null && jsonError['detail'].includes("Not found")) {
+                    console.log("404 Game not found", rawgID);
+                    await sleep(1500);
+                    return null;
+                } else if (jsonError['error'] != null && jsonError['error'].includes("The monthly API limit reached")) {
+                    if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                        changeAPIKey();
+                        await sleep(1000);
+                        return await getGameDetails(rawgID);
+                    } else {
+                        console.log("Out of API Keys.");
+                        return null;
+                    }
+                } else {
+                    console.log("Unexpected game details error occured.", jsonError);
+                    await sleep(2000);
+                    return await getGameDetails(rawgID);
+                }
+            } catch (_) {
+                console.log("\nGame details inner request error occured", rawgID, gameDetailsAPI, storesAPI, error.error);
+                await sleep(1700);
+                return await getGameDetails(rawgID);
+            }
+        }
+
+        console.log("\nGame details request error occured", rawgID, error);
+        await sleep(1500);
+        return await getGameDetails(rawgID);
+    }
+
+    await getRelatedGames(rawgID);
 
     try {
         const gameDetailsJson = JSON.parse(detailsResult);
@@ -195,7 +283,32 @@ async function getGameDetails(rawgID) {
 
 async function getRelatedGames(rawgID) {
     const relatedGamesAPI = `${rawgBaseURL}games/${rawgID}/game-series?key=${rawgAPIKey}&page=${relatedPage}`
-    const result = await request(relatedGamesAPI);
+
+    let result;
+    try {
+        result = await request(relatedGamesAPI);
+    } catch (error) {
+        if (error.error != null) {
+            try {
+                const jsonError = JSON.parse(error.error);
+
+                console.log("\nRelated Game request error occured", rawgID, jsonError);
+                await sleep(1500);
+                await getRelatedGames(rawgID);
+                return;
+            } catch (_) {
+                console.log("\nRelated Game inner request error occured", rawgID, error.error);
+                await sleep(1500);
+                await getRelatedGames(rawgID);
+                return;
+            }
+        }
+
+        console.log("\nRelated Game request error occured", rawgID, error);
+        await sleep(1500);
+        await getRelatedGames(rawgID);
+        return;
+    }
 
     try {
         const jsonData = JSON.parse(result);

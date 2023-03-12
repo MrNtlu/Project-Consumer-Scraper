@@ -7,13 +7,13 @@ async function main() {
     try{
         await ConnectToMongoDB();
         await Promise.all([
-            StartAnimeRequests(),
-            StartMovieFileDownload(),
+            // StartAnimeRequests(),
             StartGameRequests(),
+            // StartMovieFileDownload(),
         ])
         DisconnectFromMongoDB();
     } catch(err) {
-        console.log('Error occured', err);
+        console.log('Main Error occured', err);
         return;
     }
 }
