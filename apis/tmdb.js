@@ -6,8 +6,6 @@ require('dotenv').config()
 const tmdbAPIKey = process.env.TMDB_API_KEY;
 
 async function getTVSeries(tvID) {
-    console.log("Fetch started with tv ID:", tvID);
-
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const result = await request(tvAPI);
@@ -90,14 +88,12 @@ async function getTVSeries(tvID) {
 
         return tempTVModel;
     } catch (error) {
-        console.log("TVSeries error occured", error);
+        console.log("TVSeries error occured", tvID, error);
         return null;
     }
 }
 
 async function getMovies(movieID) {
-    console.log("Fetch started with ID:", movieID);
-
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
     const result = await request(movieAPI);
@@ -151,7 +147,7 @@ async function getMovies(movieID) {
 
         return tempMovieModel;
     } catch (error) {
-        console.log("Movie error occured", error);
+        console.log("Movie error occured", movieID, error);
         return null;
     }
 }

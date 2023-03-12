@@ -9,7 +9,6 @@ const malIDList = [];
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 1000) {
         const sleepTimeInMillis = 1001 - (endTime - startTime);
-        console.log(`Sleeping for ${sleepTimeInMillis}`);
         await sleep(sleepTimeInMillis);
     }
 }
@@ -67,7 +66,6 @@ async function getAnimeList() {
 
 async function getAnimeDetails(malID) {
     const startTime = performance.now();
-    console.log("Get details by mal ID ", malID);
 
     const animeDetailsAPI = jikanBaseURL + "anime/" + malID + "/full";
     const result = await request(animeDetailsAPI);
@@ -204,7 +202,7 @@ async function getAnimeDetails(malID) {
 
         return tempAnimeModel;
     } catch (error) {
-        console.log("Error occured", error);
+        console.log("Error occured", malID, error);
         return null;
     }
 }

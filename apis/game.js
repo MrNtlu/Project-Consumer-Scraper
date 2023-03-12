@@ -95,8 +95,6 @@ async function getUpcomingGameList() {
 }
 
 async function getGameDetails(rawgID) {
-    console.log("Get details by rawg ID ", rawgID);
-
     const baseDetailsAPI = `${rawgBaseURL}games/${rawgID}`
 
     const gameDetailsAPI = `${baseDetailsAPI}?key=${rawgAPIKey}`
@@ -190,7 +188,7 @@ async function getGameDetails(rawgID) {
 
         return tempGameModel;
     } catch (error) {
-        console.log("Game details error occured", error);
+        console.log("Game details error occured", rawgID, error);
         return null;
     }
 }
