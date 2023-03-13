@@ -215,7 +215,7 @@ async function getGameDetails(rawgID) {
             const item = genresJson[index];
             genreList.push({
                 name: item['name'],
-                rawgID: item['id']
+                rawg_id: item['id']
             });
         }
 
@@ -251,21 +251,21 @@ async function getGameDetails(rawgID) {
 
         const tempGameModel = GameModel({
             title: gameDetailsJson['name'],
-            titleOriginal: gameDetailsJson['name_original'],
+            title_original: gameDetailsJson['name_original'],
             description: gameDetailsJson['description'],
             tba: gameDetailsJson['tba'],
-            rawgID: gameDetailsJson['id'],
-            rawgRating: gameDetailsJson['rating'],
-            rawgRatingCount: gameDetailsJson['ratings_count'],
-            metacriticScore: gameDetailsJson['metacritic'],
-            metacriticScoreByPlatform: metacriticPlatformsList,
-            releaseDate: gameDetailsJson['released'],
-            backgroundImage: gameDetailsJson['background_image'],
-            subReddit: gameDetailsJson['reddit_url'],
-            ageRating: gameDetailsJson['esrb_rating'] != null
+            rawg_id: gameDetailsJson['id'],
+            rawg_rating: gameDetailsJson['rating'],
+            rawg_rating_count: gameDetailsJson['ratings_count'],
+            metacritic_score: gameDetailsJson['metacritic'],
+            metacritic_score_by_platform: metacriticPlatformsList,
+            release_date: gameDetailsJson['released'],
+            background_image: gameDetailsJson['background_image'],
+            subreddit: gameDetailsJson['reddit_url'],
+            age_rating: gameDetailsJson['esrb_rating'] != null
                 ? gameDetailsJson['esrb_rating']['name']
                 : null,
-            relatedGames: relatedGamesList,
+            related_games: relatedGamesList,
             genres: genreList,
             tags: tagList,
             platforms: platformList,
@@ -324,8 +324,8 @@ async function getRelatedGames(rawgID) {
                 if (isUpcomingGame || item['metacritic'] != null) {
                     relatedGamesList.push({
                         name: item['name'],
-                        releaseDate: item['released'],
-                        rawgID: item['id'],
+                        release_date: item['released'],
+                        rawg_id: item['id'],
                     });
                 }
             }
@@ -350,7 +350,7 @@ function parseStoreJsonData(result) {
         for (let index = 0; index < storeJson.length; index++) {
             const item = storeJson[index];
             storeList.push({
-                storeID: item['store_id'],
+                store_id: item['store_id'],
                 url: item['url'],
             });
         }

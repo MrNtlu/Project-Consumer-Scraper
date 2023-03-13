@@ -20,7 +20,7 @@ function disconnectFromMongoDB() {
 
 const genreSchema = mongoose.Schema({
     name: String,
-    tmdbID: Number,
+    tmdb_id: Number,
 },{ _id : false });
 
 const streamingPlatformSchema = mongoose.Schema({
@@ -29,38 +29,38 @@ const streamingPlatformSchema = mongoose.Schema({
 },{ _id : false });
 
 const streamingSchema = mongoose.Schema({
-    countryCode: String,
-    streamingPlatforms: [streamingPlatformSchema],
-    buyOptions: [streamingPlatformSchema],
-    rentOptions: [streamingPlatformSchema],
+    country_code: String,
+    streaming_platforms: [streamingPlatformSchema],
+    buy_options: [streamingPlatformSchema],
+    rent_options: [streamingPlatformSchema],
 },{ _id : false });
 
 const productionAndCompanySchema = mongoose.Schema({
     logo: { type: String, required: false },
     name: String,
-    originCountry: String,
+    origin_country: String,
 },{ _id : false });
 
 const MovieModel = mongoose.model(
     "movies",
     mongoose.Schema({
-        titleOriginal: String,
-        titleEn: String,
+        title_original: String,
+        title_en: String,
         description: String,
-        imageURL: String,
-        smallImageURL: String,
+        image_url: String,
+        small_image_url: String,
         status: String,
         length: Number,
-        imdbID: String,
-        tmdbID: String,
-        tmdbPopularity: Number,
-        tmdbVote: Number,
-        tmdbVoteCount: Number,
-        productionCompanies: [productionAndCompanySchema],
-        releaseDate: String,
+        imdb_id: String,
+        tmdb_id: String,
+        tmdb_popularity: Number,
+        tmdb_vote: Number,
+        tmdb_vote_count: Number,
+        production_companies: [productionAndCompanySchema],
+        release_date: String,
         genres: [genreSchema],
         streaming: [streamingSchema],
-        createdAt: Date,
+        created_at: Date,
     }, {
         versionKey: false
     }
@@ -69,34 +69,34 @@ const MovieModel = mongoose.model(
 const TVSeriesModel = mongoose.model(
     "tv-series",
     mongoose.Schema({
-        titleOriginal: String,
-        titleEn: String,
+        title_original: String,
+        title_en: String,
         description: String,
-        imageURL: String,
-        smallImageURL: String,
+        image_url: String,
+        small_image_url: String,
         status: String,
-        tmdbID: Number,
-        tmdbPopularity: Number,
-        tmdbVote: Number,
-        tmdbVoteCount: Number,
-        totalSeasons: Number,
-        totalEpisodes: Number,
-        productionCompanies: [productionAndCompanySchema],
-        firstAirDate: String,
+        tmdb_id: Number,
+        tmdb_popularity: Number,
+        tmdb_vote: Number,
+        tmdb_vote_count: Number,
+        total_seasons: Number,
+        total_episodes: Number,
+        production_companies: [productionAndCompanySchema],
+        first_air_date: String,
         genres: [genreSchema],
         streaming: [streamingSchema],
         networks: [productionAndCompanySchema],
         seasons: [
             mongoose.Schema({
-                airDate: String,
-                episodeCount: Number,
+                air_date: String,
+                episode_count: Number,
                 name: String,
                 description: String,
-                seasonNum: Number,
-                imageURL: String,
+                season_num: Number,
+                image_url: String,
             },{ _id : false })
         ],
-        createdAt: Date,
+        created_at: Date,
     }, {
         versionKey: false
     }
@@ -110,28 +110,28 @@ const animeNameURLSchema = mongoose.Schema({
 const animeGenreSchema = mongoose.Schema({
     name: String,
     url: String,
-    malID: Number,
+    mal_id: Number,
 },{ _id : false })
 
 const animeRelationSchema = mongoose.Schema({
-    malID: Number,
+    mal_id: Number,
     type: String,
     name: String,
-    redirectURL: String,
+    redirect_url: String,
 },{ _id : false })
 
 const AnimeModel = mongoose.model(
     "animes",
     mongoose.Schema({
-        titleOriginal: String,
-        titleEn: String,
-        titleJP: String,
+        title_original: String,
+        title_en: String,
+        title_jp: String,
         description: String,
-        imageURL: String,
-        smallImageURL: String,
-        malID: Number,
-        malScore: Number,
-        malScoredBy: Number,
+        image_url: String,
+        small_image_url: String,
+        mal_id: Number,
+        mal_score: Number,
+        mal_scored_by: Number,
         trailer: {
             type: String,
             required: false,
@@ -149,19 +149,19 @@ const AnimeModel = mongoose.model(
             required: false,
         },
         status: String,
-        isCurrentlyAiring: Boolean,
+        is_airing: Boolean,
         streaming: [animeNameURLSchema],
         aired: mongoose.Schema({
             from: String,
             to: String,
-            fromDay: Number,
-            fromMonth: Number,
-            fromYear: Number,
-            toDay: Number,
-            toMonth: Number,
-            toYear: Number,
+            from_day: Number,
+            from_month: Number,
+            from_year: Number,
+            to_day: Number,
+            to_month: Number,
+            to_year: Number,
         }),
-        ageRating: String,
+        age_rating: String,
         producers: [animeNameURLSchema],
         studios: [animeNameURLSchema],
         genres: [animeGenreSchema],
@@ -180,33 +180,33 @@ const GameModel = mongoose.model(
     "games",
     mongoose.Schema({
         title: String,
-        titleOriginal: String,
+        title_original: String,
         description: String,
         tba: Boolean,
-        rawgID: Number,
-        rawgRating: Number,
-        rawgRatingCount: Number,
-        metacriticScore: Number,
-        metacriticScoreByPlatform: [
+        rawg_id: Number,
+        rawg_rating: Number,
+        rawg_rating_count: Number,
+        metacritic_score: Number,
+        metacritic_score_by_platform: [
             mongoose.Schema({
                 score: Number,
                 platform: String,
             },{ _id : false })
         ],
-        releaseDate: String,
-        backgroundImage: String,
-        subReddit: { type: String, required: false },
-        ageRating: String,
-        relatedGames: [
+        release_date: String,
+        background_image: String,
+        subreddit: { type: String, required: false },
+        age_rating: String,
+        related_games: [
             mongoose.Schema({
                 name: String,
-                releaseDate: String,
-                rawgID: Number,
+                release_date: String,
+                rawg_id: Number,
             },{ _id : false })
         ],
         genres: [
             mongoose.Schema({
-                rawgID: String,
+                rawg_id: String,
                 name: String,
             },{ _id : false })
         ],
@@ -216,7 +216,7 @@ const GameModel = mongoose.model(
         publishers: [String],
         stores: [
             mongoose.Schema({
-                storeID: Number,
+                store_id: Number,
                 url: String,
             },{ _id : false })
         ],

@@ -23,7 +23,7 @@ async function getTVSeries(tvID) {
                     ? `${tmdbBaseImageURL}original/${item['logo_path']}`
                     : null,
                 name: item['name'],
-                originCountry: item['origin_country']
+                origin_country: item['origin_country']
             });
         }
 
@@ -36,7 +36,7 @@ async function getTVSeries(tvID) {
                     ? `${tmdbBaseImageURL}original/${item['logo_path']}`
                     : null,
                 name: item['name'],
-                originCountry: item['origin_country']
+                origin_country: item['origin_country']
             });
         }
 
@@ -46,7 +46,7 @@ async function getTVSeries(tvID) {
             const item = genresJson[index];
             genreList.push({
                 name: item['name'],
-                tmdbID: item['id'],
+                tmdb_id: item['id'],
             });
         }
 
@@ -56,33 +56,35 @@ async function getTVSeries(tvID) {
             const item = seasonsJson[index];
             if (parseInt(item['season_number']) != 0) {
                 seasonList.push({
-                    airDate: item['air_date'],
-                    episodeCount: item['episode_count'],
+                    air_date: item['air_date'],
+                    episode_count: item['episode_count'],
                     name: item['name'],
                     description: item['overview'],
-                    seasonNum: item['season_number'],
-                    imageURL: `${tmdbBaseImageURL}original/${item['poster_path']}`,
+                    season_num: item['season_number'],
+                    image_url: `${tmdbBaseImageURL}original/${item['poster_path']}`,
                 });
             }
         }
 
         const tempTVModel = TVSeriesModel({
-            titleOriginal: jsonData['original_name'],
-            titleEn: jsonData['name'],
+            title_original: jsonData['original_name'],
+            title_en: jsonData['name'],
             description: jsonData['overview'],
-            imageURL: `${tmdbBaseImageURL}original/${jsonData['poster_path']}`,
-            smallImageURL: `${tmdbBaseImageURL}w342/${jsonData['poster_path']}`,
+            image_url: `${tmdbBaseImageURL}original/${jsonData['poster_path']}`,
+            small_image_url: `${tmdbBaseImageURL}w342/${jsonData['poster_path']}`,
             status: jsonData['status'],
-            tmdbID: jsonData['id'],
-            tmdbPopularity: jsonData['popularity'],
-            tmdbVote: jsonData['vote_average'],
-            tmdbVoteCount: jsonData['vote_count'],
-            productionCompanies: productionCompaniesList,
-            networks: networkList,
-            releaseDate: jsonData['first_air_date'],
+            tmdb_id: jsonData['id'],
+            tmdb_popularity: jsonData['popularity'],
+            tmdb_vote: jsonData['vote_average'],
+            tmdb_vote_count: jsonData['vote_count'],
+            total_seasons: jsonData['number_of_seasons'],
+            total_episodes: jsonData['number_of_episodes'],
+            production_companies: productionCompaniesList,
+            first_air_date: jsonData['first_air_date'],
             genres: genreList,
-            seasons: seasonList,
             streaming: parseStreamingJsonData(streamingResult),
+            networks: networkList,
+            seasons: seasonList,
             created_at: new Date()
         })
 
@@ -126,20 +128,20 @@ async function getMovies(movieID) {
         }
 
         const tempMovieModel = MovieModel({
-            titleOriginal: jsonData['original_title'],
-            titleEn: jsonData['title'],
+            title_original: jsonData['original_title'],
+            title_en: jsonData['title'],
             description: jsonData['overview'],
-            imageURL: `${tmdbBaseImageURL}original/${jsonData['poster_path']}`,
-            smallImageURL: `${tmdbBaseImageURL}w342/${jsonData['poster_path']}`,
+            image_url: `${tmdbBaseImageURL}original/${jsonData['poster_path']}`,
+            small_image_url: `${tmdbBaseImageURL}w342/${jsonData['poster_path']}`,
             status: jsonData['status'],
             length: jsonData['runtime'],
-            imdbID: jsonData['imdb_id'],
-            tmdbID: jsonData['id'],
-            tmdbPopularity: jsonData['popularity'],
-            tmdbVote: jsonData['vote_average'],
-            tmdbVoteCount: jsonData['vote_count'],
-            productionCompanies: productionCompaniesList,
-            releaseDate: jsonData['release_date'],
+            imdb_id: jsonData['imdb_id'],
+            tmdb_id: jsonData['id'],
+            tmdb_popularity: jsonData['popularity'],
+            tmdb_vote: jsonData['vote_average'],
+            tmdb_vote_count: jsonData['vote_count'],
+            production_companies: productionCompaniesList,
+            release_date: jsonData['release_date'],
             genres: genreList,
             streaming: parseStreamingJsonData(streamingResult),
             created_at: new Date()
@@ -199,10 +201,10 @@ function parseStreamingJsonData(result) {
 
             if (flatrateList.length > 0 || buyList.length > 0 || rentList.length > 0) {
                 streamingList.push({
-                    countryCode: key,
-                    streamingPlatforms: flatrateList.length > 0 ? flatrateList : null,
-                    buyOptions: buyList.length > 0 ? buyList : null,
-                    rentOptions: rentList.length > 0 ? rentList : null
+                    country_code: key,
+                    streaming_platforms: flatrateList.length > 0 ? flatrateList : null,
+                    buy_options: buyList.length > 0 ? buyList : null,
+                    rent_options: rentList.length > 0 ? rentList : null
                 });
             }
         });

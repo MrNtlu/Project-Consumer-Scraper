@@ -7,9 +7,9 @@ async function main() {
     try{
         await ConnectToMongoDB();
         await Promise.all([
-            // StartAnimeRequests(),
+            StartAnimeRequests(),
             StartGameRequests(),
-            // StartMovieFileDownload(),
+            StartMovieFileDownload(),
         ])
         DisconnectFromMongoDB();
     } catch(err) {

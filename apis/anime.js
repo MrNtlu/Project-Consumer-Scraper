@@ -161,7 +161,7 @@ async function getAnimeDetails(malID) {
                 genreList.push({
                     name: item['name'],
                     url: item['url'],
-                    malID: item['mal_id'],
+                    mal_id: item['mal_id'],
                 });
             }
 
@@ -172,7 +172,7 @@ async function getAnimeDetails(malID) {
                 themeList.push({
                     name: item['name'],
                     url: item['url'],
-                    malID: item['mal_id'],
+                    mal_id: item['mal_id'],
                 });
             }
 
@@ -183,7 +183,7 @@ async function getAnimeDetails(malID) {
                 demographicList.push({
                     name: item['name'],
                     url: item['url'],
-                    malID: item['mal_id'],
+                    mal_id: item['mal_id'],
                 });
             }
 
@@ -199,8 +199,8 @@ async function getAnimeDetails(malID) {
                     sourceList.push({
                         name: element['name'],
                         type: element['type'],
-                        malID: element['mal_id'],
-                        redirectURL: element['url'],
+                        mal_id: element['mal_id'],
+                        redirect_url: element['url'],
                     });
                 }
 
@@ -211,15 +211,15 @@ async function getAnimeDetails(malID) {
             }
 
             const tempAnimeModel = AnimeModel({
-                titleOriginal: jsonData['title'],
-                titleEn: jsonData['title_english'],
-                titleJP: jsonData['title_japanese'],
+                title_original: jsonData['title'],
+                title_en: jsonData['title_english'],
+                title_jp: jsonData['title_japanese'],
                 description: jsonData['synopsis'],
-                imageURL: jsonData['images']['jpg']['large_image_url'],
-                smallImageURL: jsonData['images']['jpg']['small_image_url'],
-                malID: jsonData['mal_id'],
-                malScore: jsonData['score'],
-                malScoredBy: jsonData['scored_by'],
+                image_url: jsonData['images']['jpg']['large_image_url'],
+                small_image_url: jsonData['images']['jpg']['small_image_url'],
+                mal_id: jsonData['mal_id'],
+                mal_score: jsonData['score'],
+                mal_scored_by: jsonData['scored_by'],
                 trailer: jsonData['trailer']['url'],
                 type: jsonData['type'],
                 source: jsonData['source'],
@@ -227,19 +227,19 @@ async function getAnimeDetails(malID) {
                 season: jsonData['season'],
                 year: jsonData['year'],
                 status: jsonData['status'],
-                isCurrentlyAiring: jsonData['airing'],
+                is_airing: jsonData['airing'],
                 streaming: streamingList,
                 aired: {
                     from: jsonData['aired']['from'],
                     to: jsonData['aired']['to'],
-                    fromDay: jsonData['aired']['prop']['from']['day'],
-                    fromMonth: jsonData['aired']['prop']['from']['month'],
-                    fromYear: jsonData['aired']['prop']['from']['year'],
-                    toDay: jsonData['aired']['prop']['to']['day'],
-                    toMonth: jsonData['aired']['prop']['to']['month'],
-                    toYear: jsonData['aired']['prop']['to']['year'],
+                    from_day: jsonData['aired']['prop']['from']['day'],
+                    from_month: jsonData['aired']['prop']['from']['month'],
+                    from_year: jsonData['aired']['prop']['from']['year'],
+                    to_day: jsonData['aired']['prop']['to']['day'],
+                    to_month: jsonData['aired']['prop']['to']['month'],
+                    to_year: jsonData['aired']['prop']['to']['year'],
                 },
-                ageRating: jsonData['rating'],
+                age_rating: jsonData['rating'],
                 producers: producerList,
                 studios: studioList,
                 genres: genreList,
