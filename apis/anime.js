@@ -4,8 +4,10 @@ const { AnimeModel } = require("../mongodb");
 const { performance } = require('perf_hooks');
 
 var page = 1;
-// Not found ID's [44189, 48631, 49063, 49638, 50364, 51083, 52874]
+// Not found ID's [44189, 48631, 49063, 49638, 50364, 51083, 52874, 42965, 35267, 38426, 40293]
 const malIDList = [];
+
+//TODO: Some anime's don't have the mal score, check.
 
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 1300) {
@@ -33,6 +35,7 @@ async function startAnimeRequests() {
         await AnimeModel.deleteMany({});
         await AnimeModel.insertMany(animeList);
     }
+    console.log("Animes are DONE!");
 }
 
 async function getAnimeList() {
@@ -92,12 +95,12 @@ async function getAnimeDetails(malID) {
                         await sleep(1500);
                         return null;
                     } else if (jsonError['status'] == 403) {
-                        console.log("403 Failed to connect. Let's cool it down for 3 seconds.", malID, animeDetailsAPI);
-                        await sleep(3000);
+                        console.log("403 Failed to connect. Let's cool it down for 3.5 seconds.", malID, animeDetailsAPI);
+                        await sleep(3500);
                         return await getAnimeDetails(malID);
                     } else if (jsonError['status'] == 408) {
-                        console.log("408 Timeout exeption. Will wait for 2 seconds.", animeDetailsAPI);
-                        await sleep(2000);
+                        console.log("408 Timeout exeption. Will wait for 3 seconds.", animeDetailsAPI);
+                        await sleep(3000);
                         return await getAnimeDetails(malID);
                     } else {
                         console.log("Unexpected error occured.", jsonError, animeDetailsAPI);

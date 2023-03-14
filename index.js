@@ -6,11 +6,9 @@ const { StartMovieFileDownload } = require("./scrapers/tmdb");
 async function main() {
     try{
         await ConnectToMongoDB();
-        await Promise.all([
-            StartAnimeRequests(),
-            StartGameRequests(),
-            StartMovieFileDownload(),
-        ])
+        await StartAnimeRequests();
+        await StartGameRequests();
+        //StartMovieFileDownload();
         DisconnectFromMongoDB();
     } catch(err) {
         console.log('Main Error occured', err);

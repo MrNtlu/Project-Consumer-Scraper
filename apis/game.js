@@ -54,6 +54,7 @@ async function startGameRequests() {
         await GameModel.deleteMany({});
         await GameModel.insertMany(gameList);
     }
+    console.log("Games are DONE!");
 }
 
 async function getGameList() {
@@ -150,14 +151,14 @@ async function getGameDetails(rawgID) {
     let storesResult;
     try {
         const startTime = performance.now();
-
-        [detailsResult, storesResult] = await Promise.all([
-            request(gameDetailsAPI),
-            request(storesAPI),
-        ]);
-
+        detailsResult = await request(gameDetailsAPI);
         const endTime = performance.now();
         await satisfyRateLimiting(endTime, startTime);
+
+        const storesStartTime = performance.now();
+        storesResult = await request(storesAPI);
+        const storesEndTime = performance.now();
+        await satisfyRateLimiting(storesEndTime, storesStartTime);
     } catch (error) {
         if (error.error != null) {
             try {

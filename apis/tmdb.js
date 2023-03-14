@@ -8,7 +8,15 @@ const tmdbAPIKey = process.env.TMDB_API_KEY;
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
-    const result = await request(tvAPI);
+
+    let result;
+    try {
+        result = await request(tvAPI);
+    } catch (error) {
+        console.log("\nTVSeries request error occured", tvAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvAPI);
+    }
 
     try {
         const jsonData = JSON.parse(result);
@@ -98,11 +106,27 @@ async function getTVSeries(tvID) {
 async function getMovies(movieID) {
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
-    const result = await request(movieAPI);
+
+    let result;
+    try {
+        result = await request(movieAPI);
+    } catch (error) {
+        console.log("\nMovie request error occured", movieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
+
+    let streamingResult;
+    try {
+        streamingResult = await request(streamingMovieAPI);
+    } catch (error) {
+        console.log("\nMovie streaming request error occured", streamingMovieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
 
     try {
         const jsonData = JSON.parse(result);
-        const streamingResult = await request(streamingMovieAPI);
 
         const productionCompaniesJson = jsonData['production_companies'];
         const productionCompaniesList = [];
