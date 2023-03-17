@@ -1,4 +1,3 @@
-const request = require("request-promise");
 const { jikanBaseURL, sleep } = require("../constants");
 const { AnimeModel } = require("../mongodb");
 const { performance } = require('perf_hooks');
@@ -6,8 +5,6 @@ const { performance } = require('perf_hooks');
 var page = 1;
 // Not found ID's [44189, 48631, 49063, 49638, 50364, 51083, 52874, 42965, 35267, 38426, 40293]
 const malIDList = [];
-
-//TODO: Some anime's don't have the mal score, check.
 
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 1300) {
@@ -32,6 +29,8 @@ async function startAnimeRequests() {
     console.log(`${animeList.length} number of anime details fetched.`);
     if (animeList.length > 0) {
         console.log(`Inserting ${animeList.length} number of items to Anime DB.`);
+
+        //TODO: Find a way to delete only existing ones, if new data doesn't have X data don't delete.
         await AnimeModel.deleteMany({});
         await AnimeModel.insertMany(animeList);
     }
@@ -43,9 +42,21 @@ async function getAnimeList() {
 
     const animeAPI = `${jikanBaseURL}top/anime?page=${page}`;
 
+    let request = new Request(
+        animeAPI, {
+            method: 'GET',
+        }
+    );
+
     let result;
     try {
-        result = await request(animeAPI);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['status'] != null) {
+            throw Error(`${result['status']} ${result['message']}`)
+        }
     } catch (error) {
         console.log("\nAnime request error occured", page, error);
         await sleep(1700);
@@ -57,15 +68,13 @@ async function getAnimeList() {
     await satisfyRateLimiting(endTime, startTime);
 
     try {
-        const jsonData = JSON.parse(result);
-
-        const data = jsonData['data'];
+        const data = result['data'];
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
             malIDList.push(item['mal_id']);
         }
 
-        const hasNext = jsonData['pagination']['has_next_page'];
+        const hasNext = result['pagination']['has_next_page'];
         if (hasNext) {
             page += 1;
             await getAnimeList();
@@ -81,40 +90,38 @@ async function getAnimeDetails(malID) {
 
     const animeDetailsAPI = jikanBaseURL + "anime/" + malID + "/full";
 
+    let request = new Request(
+        animeDetailsAPI, {
+            method: 'GET',
+        }
+    )
+
     let result;
     try {
-        result = await request(animeDetailsAPI);
-    } catch (error) {
-        if (error.error != null) {
-            try {
-                const jsonError = JSON.parse(error.error);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
 
-                if (jsonError['status'] != null) {
-                    if (jsonError['status'] == 404) {
-                        console.log("404 Not Found. Stopping the request.", malID, animeDetailsAPI);
-                        await sleep(1500);
-                        return null;
-                    } else if (jsonError['status'] == 403) {
-                        console.log("403 Failed to connect. Let's cool it down for 3.5 seconds.", malID, animeDetailsAPI);
-                        await sleep(3500);
-                        return await getAnimeDetails(malID);
-                    } else if (jsonError['status'] == 408) {
-                        console.log("408 Timeout exeption. Will wait for 3 seconds.", animeDetailsAPI);
-                        await sleep(3000);
-                        return await getAnimeDetails(malID);
-                    } else {
-                        console.log("Unexpected error occured.", jsonError, animeDetailsAPI);
-                        await sleep(2000);
-                        return await getAnimeDetails(malID);
-                    }
-                }
-            } catch(_) {
-                console.log("\nAnime details inner request error occured", malID, animeDetailsAPI, error.error);
-                await sleep(1700);
+        if (result['status'] != null) {
+            if (result['status'] == 404) {
+                console.log("404 Not Found. Stopping the request.", malID, animeDetailsAPI);
+                await sleep(1500);
+                return null;
+            } else if (result['status'] == 403) {
+                console.log("403 Failed to connect. Let's cool it down for 3.5 seconds.", malID, animeDetailsAPI);
+                await sleep(3500);
+                return await getAnimeDetails(malID);
+            } else if (result['status'] == 408) {
+                console.log("408 Timeout exeption. Will wait for 3 seconds.", animeDetailsAPI);
+                await sleep(3000);
+                return await getAnimeDetails(malID);
+            } else {
+                console.log("Unexpected error occured.", result, animeDetailsAPI);
+                await sleep(2000);
                 return await getAnimeDetails(malID);
             }
         }
-
+    } catch (error) {
         console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
         await sleep(1700);
         return await getAnimeDetails(malID);
@@ -124,7 +131,7 @@ async function getAnimeDetails(malID) {
     await satisfyRateLimiting(endTime, startTime);
 
     try {
-        const jsonData = JSON.parse(result)['data'];
+        const jsonData = result['data'];
 
         if (jsonData != undefined || jsonData != null) {
             const streamingJson = jsonData['streaming'];
@@ -251,6 +258,7 @@ async function getAnimeDetails(malID) {
                 relations: relationList,
             })
 
+            console.log("Anime", tempAnimeModel);
             return tempAnimeModel;
         }
 

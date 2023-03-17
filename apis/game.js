@@ -1,4 +1,3 @@
-const request = require("request-promise");
 const { rawgBaseURL, sleep } = require("../constants");
 const { GameModel } = require("../mongodb");
 require('dotenv').config()
@@ -13,7 +12,8 @@ const rawgAPIKeyList = [
 var rawgAPIKey = process.env.RAWG_API_KEY;
 var apiKeyPointer = 0;
 
-const gameIDList = [];
+// Game not found [248397]
+const gameIDList = [3498, 3328, 4200];
 var relatedGamesList = [];
 var page = 1;
 var upcomingPage = 1;
@@ -33,9 +33,9 @@ async function satisfyRateLimiting(endTime, startTime) {
 }
 
 async function startGameRequests() {
-    await getGameList();
-    await getUpcomingGameList();
-    console.log(`${gameIDList.length} number of game details will be fetched.`);
+    // await getGameList();
+    // await getUpcomingGameList();
+    // console.log(`${gameIDList.length} number of game details will be fetched.`);
 
     const gameList = [];
     for (let index = 0; index < gameIDList.length; index++) {
@@ -51,6 +51,8 @@ async function startGameRequests() {
     console.log(`${gameList.length} number of game details fetched.`);
     if (gameList.length > 0) {
         console.log(`Inserting ${gameList.length} number of items to Game DB`);
+
+        //TODO: Find a way to delete only existing ones, if new data doesn't have X data don't delete.
         await GameModel.deleteMany({});
         await GameModel.insertMany(gameList);
     }
@@ -62,9 +64,32 @@ async function getGameList() {
 
     const gameAPI = `${rawgBaseURL}games?page=${page}&key=${rawgAPIKey}&metacritic=1,100&parent_platforms=1,2,3,6,7`;
 
+    let request = new Request(
+        gameAPI, {
+            method: 'GET',
+        }
+    )
+
     let result;
     try {
-        result = await request(gameAPI);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['detail'] != null || result['error'] != null) {
+            if (result['error'] != null && result['error'].includes("The monthly API limit reached")) {
+                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                    changeAPIKey();
+                    await sleep(1000);
+                    return await getGameList();
+                } else {
+                    console.log("Out of API Keys.");
+                    return null;
+                }
+            } else {
+                throw Error(result['detail'])
+            }
+        }
     } catch (error) {
         console.log("\nGame request error occured", page, error);
         await sleep(1500);
@@ -76,15 +101,13 @@ async function getGameList() {
     await satisfyRateLimiting(endTime, startTime);
 
     try {
-        const jsonData = JSON.parse(result);
-
-        const results = jsonData['results'];
+        const results = result['results'];
         for (let index = 0; index < results.length; index++) {
             const item = results[index];
             gameIDList.push(item['id']);
         }
 
-        const shouldIterate = jsonData['next'];
+        const shouldIterate = result['next'];
         if (shouldIterate != null) {
             page += 1;
             await getGameList();
@@ -108,9 +131,32 @@ async function getUpcomingGameList() {
 
     const upcomingGameAPI = `${rawgBaseURL}games?page=${upcomingPage}&key=${rawgAPIKey}&dates=${today},${nextYear}&parent_platforms=1,2,3,6,7`;
 
+    let request = new Request(
+        upcomingGameAPI, {
+            method: 'GET',
+        }
+    )
+
     let result;
     try {
-        result = await request(upcomingGameAPI);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['detail'] != null || result['error'] != null) {
+            if (result['error'] != null && result['error'].includes("The monthly API limit reached")) {
+                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                    changeAPIKey();
+                    await sleep(1000);
+                    return await getGameList();
+                } else {
+                    console.log("Out of API Keys.");
+                    return null;
+                }
+            } else {
+                throw Error(result['detail'])
+            }
+        }
     } catch (error) {
         console.log("\nUpcoming Game request error occured", upcomingPage, error);
         await sleep(1500);
@@ -122,15 +168,13 @@ async function getUpcomingGameList() {
     await satisfyRateLimiting(endTime, startTime);
 
     try {
-        const jsonData = JSON.parse(result);
-
-        const results = jsonData['results'];
+        const results = result['results'];
         for (let index = 0; index < results.length; index++) {
             const item = results[index];
             gameIDList.push(item['id']);
         }
 
-        const shouldIterate = jsonData['next'];
+        const shouldIterate = result['next'];
         if (shouldIterate != null) {
             upcomingPage += 1;
             await getUpcomingGameList();
@@ -147,48 +191,81 @@ async function getGameDetails(rawgID) {
     const gameDetailsAPI = `${baseDetailsAPI}?key=${rawgAPIKey}`
     const storesAPI = `${baseDetailsAPI}/stores?key=${rawgAPIKey}`
 
+    let gameDetailsRequest = new Request(
+        gameDetailsAPI, {
+            method: 'GET',
+        }
+    );
+
+    let storesRequest = new Request(
+        storesAPI, {
+            method: 'GET',
+        }
+    );
+
     let detailsResult;
     let storesResult;
     try {
         const startTime = performance.now();
-        detailsResult = await request(gameDetailsAPI);
+
+        detailsResult = await fetch(gameDetailsRequest).then((response) => {
+            return response.json();
+        });
+
         const endTime = performance.now();
         await satisfyRateLimiting(endTime, startTime);
 
         const storesStartTime = performance.now();
-        storesResult = await request(storesAPI);
+
+        storesResult = await fetch(storesRequest).then((response) => {
+            return response.json();
+        });
+
         const storesEndTime = performance.now();
         await satisfyRateLimiting(storesEndTime, storesStartTime);
-    } catch (error) {
-        if (error.error != null) {
-            try {
-                const jsonError = JSON.parse(error.error);
 
-                if (jsonError['detail'] != null && jsonError['detail'].includes("Not found")) {
-                    console.log("404 Game not found", rawgID);
-                    await sleep(1500);
-                    return null;
-                } else if (jsonError['error'] != null && jsonError['error'].includes("The monthly API limit reached")) {
-                    if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
-                        changeAPIKey();
-                        await sleep(1000);
-                        return await getGameDetails(rawgID);
-                    } else {
-                        console.log("Out of API Keys.");
-                        return null;
-                    }
-                } else {
-                    console.log("Unexpected game details error occured.", jsonError);
-                    await sleep(2000);
+        if (detailsResult['detail'] != null || detailsResult['error'] != null) {
+            if (detailsResult['detail'] != null && detailsResult['detail'].includes("Not found")) {
+                console.log("404 Game not found", rawgID);
+                await sleep(1500);
+                return null;
+            } else if (detailsResult['error'] != null && detailsResult['error'].includes("The monthly API limit reached")) {
+                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                    changeAPIKey();
+                    await sleep(1000);
                     return await getGameDetails(rawgID);
+                } else {
+                    console.log("Out of API Keys.");
+                    return null;
                 }
-            } catch (_) {
-                console.log("\nGame details inner request error occured", rawgID, gameDetailsAPI, storesAPI, error.error);
-                await sleep(1700);
+            } else {
+                console.log("Unexpected game details error occured.", detailsResult);
+                await sleep(2000);
                 return await getGameDetails(rawgID);
             }
         }
 
+        if (storesResult['detail'] != null || storesResult['error'] != null) {
+            if (storesResult['detail'] != null && storesResult['detail'].includes("Not found")) {
+                console.log("404 Game not found", rawgID);
+                await sleep(1500);
+                return null;
+            } else if (storesResult['error'] != null && storesResult['error'].includes("The monthly API limit reached")) {
+                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                    changeAPIKey();
+                    await sleep(1000);
+                    return await getGameDetails(rawgID);
+                } else {
+                    console.log("Out of API Keys.");
+                    return null;
+                }
+            } else {
+                console.log("Unexpected game details error occured.", storesResult);
+                await sleep(2000);
+                return await getGameDetails(rawgID);
+            }
+        }
+    } catch (error) {
         console.log("\nGame details request error occured", rawgID, error);
         await sleep(1500);
         return await getGameDetails(rawgID);
@@ -196,11 +273,9 @@ async function getGameDetails(rawgID) {
 
     await getRelatedGames(rawgID);
 
+    console.log(detailsResult);
     try {
-        const gameDetailsJson = JSON.parse(detailsResult);
-        const storesJson = JSON.parse(storesResult);
-
-        const metacriticPlatformsJson = gameDetailsJson['metacritic_platforms'];
+        const metacriticPlatformsJson = detailsResult['metacritic_platforms'];
         const metacriticPlatformsList = [];
         for (let index = 0; index < metacriticPlatformsJson.length; index++) {
             const item = metacriticPlatformsJson[index];
@@ -210,7 +285,7 @@ async function getGameDetails(rawgID) {
             });
         }
 
-        const genresJson = gameDetailsJson['genres'];
+        const genresJson = detailsResult['genres'];
         const genreList = [];
         for (let index = 0; index < genresJson.length; index++) {
             const item = genresJson[index];
@@ -220,14 +295,14 @@ async function getGameDetails(rawgID) {
             });
         }
 
-        const tagsJson = gameDetailsJson['tags'];
+        const tagsJson = detailsResult['tags'];
         const tagList = [];
         for (let index = 0; index < tagsJson.length; index++) {
             const item = tagsJson[index];
             tagList.push(item['name']);
         }
 
-        const platformsJson = gameDetailsJson['platforms'];
+        const platformsJson = detailsResult['platforms'];
         const platformList = [];
         for (let index = 0; index < platformsJson.length; index++) {
             const item = platformsJson[index];
@@ -236,14 +311,14 @@ async function getGameDetails(rawgID) {
             }
         }
 
-        const developersJson = gameDetailsJson['developers'];
+        const developersJson = detailsResult['developers'];
         const developerList = [];
         for (let index = 0; index < developersJson.length; index++) {
             const item = developersJson[index];
             developerList.push(item['name']);
         }
 
-        const publishersJson = gameDetailsJson['publishers'];
+        const publishersJson = detailsResult['publishers'];
         const publisherList = [];
         for (let index = 0; index < publishersJson.length; index++) {
             const item = publishersJson[index];
@@ -251,20 +326,20 @@ async function getGameDetails(rawgID) {
         }
 
         const tempGameModel = GameModel({
-            title: gameDetailsJson['name'],
-            title_original: gameDetailsJson['name_original'],
-            description: gameDetailsJson['description'],
-            tba: gameDetailsJson['tba'],
-            rawg_id: gameDetailsJson['id'],
-            rawg_rating: gameDetailsJson['rating'],
-            rawg_rating_count: gameDetailsJson['ratings_count'],
-            metacritic_score: gameDetailsJson['metacritic'],
+            title: detailsResult['name'],
+            title_original: detailsResult['name_original'],
+            description: detailsResult['description'],
+            tba: detailsResult['tba'],
+            rawg_id: detailsResult['id'],
+            rawg_rating: detailsResult['rating'],
+            rawg_rating_count: detailsResult['ratings_count'],
+            metacritic_score: detailsResult['metacritic'],
             metacritic_score_by_platform: metacriticPlatformsList,
-            release_date: gameDetailsJson['released'],
-            background_image: gameDetailsJson['background_image'],
-            subreddit: gameDetailsJson['reddit_url'],
-            age_rating: gameDetailsJson['esrb_rating'] != null
-                ? gameDetailsJson['esrb_rating']['name']
+            release_date: detailsResult['released'],
+            background_image: detailsResult['background_image'],
+            subreddit: detailsResult['reddit_url'],
+            age_rating: detailsResult['esrb_rating'] != null
+                ? detailsResult['esrb_rating']['name']
                 : null,
             related_games: relatedGamesList,
             genres: genreList,
@@ -272,7 +347,7 @@ async function getGameDetails(rawgID) {
             platforms: platformList,
             developers: developerList,
             publishers: publisherList,
-            stores: parseStoreJsonData(storesJson),
+            stores: parseStoreJsonData(storesResult),
         });
 
         return tempGameModel;
@@ -285,26 +360,25 @@ async function getGameDetails(rawgID) {
 async function getRelatedGames(rawgID) {
     const relatedGamesAPI = `${rawgBaseURL}games/${rawgID}/game-series?key=${rawgAPIKey}&page=${relatedPage}`
 
+    let request = new Request(
+        relatedGamesAPI, {
+            method: 'GET',
+        }
+    )
+
     let result;
     try {
-        result = await request(relatedGamesAPI);
-    } catch (error) {
-        if (error.error != null) {
-            try {
-                const jsonError = JSON.parse(error.error);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
 
-                console.log("\nRelated Game request error occured", rawgID, jsonError);
-                await sleep(1500);
-                await getRelatedGames(rawgID);
-                return;
-            } catch (_) {
-                console.log("\nRelated Game inner request error occured", rawgID, error.error);
-                await sleep(1500);
-                await getRelatedGames(rawgID);
-                return;
-            }
+        if (result['detail'] != null || result['error'] != null) {
+            console.log("\nRelated Game request error occured", rawgID, result);
+            await sleep(1500);
+            await getRelatedGames(rawgID);
+            return;
         }
-
+    } catch (error) {
         console.log("\nRelated Game request error occured", rawgID, error);
         await sleep(1500);
         await getRelatedGames(rawgID);
@@ -312,9 +386,7 @@ async function getRelatedGames(rawgID) {
     }
 
     try {
-        const jsonData = JSON.parse(result);
-
-        const relatedGamesJson = jsonData['results'];
+        const relatedGamesJson = result['results'];
         for (let index = 0; index < relatedGamesJson.length; index++) {
             const item = relatedGamesJson[index];
 
@@ -332,7 +404,7 @@ async function getRelatedGames(rawgID) {
             }
         }
 
-        const shouldIterate = jsonData['next'];
+        const shouldIterate = result['next'];
         if (shouldIterate != null) {
             relatedPage += 1;
             await getRelatedGames(rawgID);

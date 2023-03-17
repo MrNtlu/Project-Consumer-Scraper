@@ -173,8 +173,10 @@ const AnimeModel = mongoose.model(
                 source: [animeRelationSchema],
             },{ _id : false })
         ],
-    })
-)
+    }, {
+        versionKey: false
+    }
+));
 
 const GameModel = mongoose.model(
     "games",
@@ -220,8 +222,10 @@ const GameModel = mongoose.model(
                 url: String,
             },{ _id : false })
         ],
-    })
-)
+    }, {
+        versionKey: false
+    }
+));
 
 module.exports.MovieModel = MovieModel;
 module.exports.TVSeriesModel = TVSeriesModel;

@@ -84,6 +84,8 @@ async function readFile(filePath, isMovie) {
         console.log("Movie fetch Ended.");
         if (movieList.length > 0) {
             console.log(`Inserting ${movieList.length} number of items to Movie DB.`);
+
+            //TODO: Find a way to delete only existing ones, if new data doesn't have X data don't delete.
             await MovieModel.deleteMany({});
             await MovieModel.insertMany(movieList);
         }
@@ -101,6 +103,8 @@ async function readFile(filePath, isMovie) {
         console.log("TVSeries fetch ended.");
         if (tvSeriesList.length > 0) {
             console.log(`Inserting ${tvSeriesList.length} number of items to TVSeries DB.`);
+
+            //TODO: Find a way to delete only existing ones, if new data doesn't have X data don't delete.
             await TVSeriesModel.deleteMany({});
             await TVSeriesModel.insertMany(tvSeriesList);
         }

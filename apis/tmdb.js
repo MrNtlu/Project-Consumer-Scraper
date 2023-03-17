@@ -1,17 +1,30 @@
-const request = require("request-promise");
 const { tmdbBaseMovieAPIURL, tmdbBaseImageURL, tmdbBaseTVSeriesAPIURL } = require("../constants");
 const { MovieModel, TVSeriesModel } = require("../mongodb");
 require('dotenv').config()
 
 const tmdbAPIKey = process.env.TMDB_API_KEY;
 
+//TODO: Check status code and retry again, if not found (status code 34) don't try again.
+
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
 
+    let request = new Request(
+        tvAPI, {
+            method: 'GET',
+        }
+    );
+
     let result;
     try {
-        result = await request(tvAPI);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['success'] != null) {
+            throw Error(result["status_message"] != null ? result["status_message"] : "Unknown error.")
+        }
     } catch (error) {
         console.log("\nTVSeries request error occured", tvAPI, error);
         await sleep(750);
@@ -19,10 +32,21 @@ async function getTVSeries(tvID) {
     }
 
     try {
-        const jsonData = JSON.parse(result);
-        const streamingResult = await request(streamingMovieAPI);
+        let streamingRequest = new Request(
+            streamingMovieAPI, {
+                method: 'GET',
+            }
+        );
 
-        const productionCompaniesJson = jsonData['production_companies'];
+        const streamingResult = await fetch(streamingRequest).then((response) => {
+            return response.json();
+        });
+
+        if (streamingResult['success'] != null) {
+            throw Error(streamingResult["status_message"] != null ? streamingResult["status_message"] : "Unknown error.")
+        }
+
+        const productionCompaniesJson = result['production_companies'];
         const productionCompaniesList = [];
         for (let index = 0; index < productionCompaniesJson.length; index++) {
             const item = productionCompaniesJson[index];
@@ -35,7 +59,7 @@ async function getTVSeries(tvID) {
             });
         }
 
-        const networkJson = jsonData['networks'];
+        const networkJson = result['networks'];
         const networkList = [];
         for (let index = 0; index < networkJson.length; index++) {
             const item = networkJson[index];
@@ -48,7 +72,7 @@ async function getTVSeries(tvID) {
             });
         }
 
-        const genresJson = jsonData['genres'];
+        const genresJson = result['genres'];
         const genreList = [];
         for (let index = 0; index < genresJson.length; index++) {
             const item = genresJson[index];
@@ -58,7 +82,7 @@ async function getTVSeries(tvID) {
             });
         }
 
-        const seasonsJson = jsonData['seasons'];
+        const seasonsJson = result['seasons'];
         const seasonList = [];
         for (let index = 0; index < seasonsJson.length; index++) {
             const item = seasonsJson[index];
@@ -75,20 +99,20 @@ async function getTVSeries(tvID) {
         }
 
         const tempTVModel = TVSeriesModel({
-            title_original: jsonData['original_name'],
-            title_en: jsonData['name'],
-            description: jsonData['overview'],
-            image_url: `${tmdbBaseImageURL}original/${jsonData['poster_path']}`,
-            small_image_url: `${tmdbBaseImageURL}w342/${jsonData['poster_path']}`,
-            status: jsonData['status'],
-            tmdb_id: jsonData['id'],
-            tmdb_popularity: jsonData['popularity'],
-            tmdb_vote: jsonData['vote_average'],
-            tmdb_vote_count: jsonData['vote_count'],
-            total_seasons: jsonData['number_of_seasons'],
-            total_episodes: jsonData['number_of_episodes'],
+            title_original: result['original_name'],
+            title_en: result['name'],
+            description: result['overview'],
+            image_url: `${tmdbBaseImageURL}original/${result['poster_path']}`,
+            small_image_url: `${tmdbBaseImageURL}w342/${result['poster_path']}`,
+            status: result['status'],
+            tmdb_id: result['id'],
+            tmdb_popularity: result['popularity'],
+            tmdb_vote: result['vote_average'],
+            tmdb_vote_count: result['vote_count'],
+            total_seasons: result['number_of_seasons'],
+            total_episodes: result['number_of_episodes'],
             production_companies: productionCompaniesList,
-            first_air_date: jsonData['first_air_date'],
+            first_air_date: result['first_air_date'],
             genres: genreList,
             streaming: parseStreamingJsonData(streamingResult),
             networks: networkList,
@@ -107,9 +131,27 @@ async function getMovies(movieID) {
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
 
+    let request = new Request(
+        movieAPI, {
+            method: 'GET',
+        }
+    );
+
+    let streamingRequest = new Request(
+        streamingMovieAPI, {
+            method: 'GET',
+        }
+    );
+
     let result;
     try {
-        result = await request(movieAPI);
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['success'] != null) {
+            throw Error(result["status_message"] != null ? result["status_message"] : "Unknown error.")
+        }
     } catch (error) {
         console.log("\nMovie request error occured", movieAPI, error);
         await sleep(750);
@@ -118,7 +160,13 @@ async function getMovies(movieID) {
 
     let streamingResult;
     try {
-        streamingResult = await request(streamingMovieAPI);
+        streamingResult = await fetch(streamingRequest).then((response) => {
+            return response.json();
+        });
+
+        if (streamingResult['success'] != null) {
+            throw Error(streamingResult["status_message"] != null ? streamingResult["status_message"] : "Unknown error.")
+        }
     } catch (error) {
         console.log("\nMovie streaming request error occured", streamingMovieAPI, error);
         await sleep(750);
@@ -126,9 +174,7 @@ async function getMovies(movieID) {
     }
 
     try {
-        const jsonData = JSON.parse(result);
-
-        const productionCompaniesJson = jsonData['production_companies'];
+        const productionCompaniesJson = result['production_companies'];
         const productionCompaniesList = [];
         for (let index = 0; index < productionCompaniesJson.length; index++) {
             const item = productionCompaniesJson[index];
@@ -141,7 +187,7 @@ async function getMovies(movieID) {
             });
         }
 
-        const genresJson = jsonData['genres'];
+        const genresJson = result['genres'];
         const genreList = [];
         for (let index = 0; index < genresJson.length; index++) {
             const item = genresJson[index];
@@ -152,20 +198,20 @@ async function getMovies(movieID) {
         }
 
         const tempMovieModel = MovieModel({
-            title_original: jsonData['original_title'],
-            title_en: jsonData['title'],
-            description: jsonData['overview'],
-            image_url: `${tmdbBaseImageURL}original/${jsonData['poster_path']}`,
-            small_image_url: `${tmdbBaseImageURL}w342/${jsonData['poster_path']}`,
-            status: jsonData['status'],
-            length: jsonData['runtime'],
-            imdb_id: jsonData['imdb_id'],
-            tmdb_id: jsonData['id'],
-            tmdb_popularity: jsonData['popularity'],
-            tmdb_vote: jsonData['vote_average'],
-            tmdb_vote_count: jsonData['vote_count'],
+            title_original: result['original_title'],
+            title_en: result['title'],
+            description: result['overview'],
+            image_url: `${tmdbBaseImageURL}original/${result['poster_path']}`,
+            small_image_url: `${tmdbBaseImageURL}w342/${result['poster_path']}`,
+            status: result['status'],
+            length: result['runtime'],
+            imdb_id: result['imdb_id'],
+            tmdb_id: result['id'],
+            tmdb_popularity: result['popularity'],
+            tmdb_vote: result['vote_average'],
+            tmdb_vote_count: result['vote_count'],
             production_companies: productionCompaniesList,
-            release_date: jsonData['release_date'],
+            release_date: result['release_date'],
             genres: genreList,
             streaming: parseStreamingJsonData(streamingResult),
             created_at: new Date()
@@ -180,7 +226,7 @@ async function getMovies(movieID) {
 
 function parseStreamingJsonData(result) {
     try {
-        const jsonData = JSON.parse(result)['results'];
+        const jsonData = result['results'];
         const streamingList = [];
 
         Object.keys(jsonData).forEach(function(key) {
