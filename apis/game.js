@@ -12,8 +12,7 @@ const rawgAPIKeyList = [
 var rawgAPIKey = process.env.RAWG_API_KEY;
 var apiKeyPointer = 0;
 
-// Game not found [248397]
-const gameIDList = [3498, 3328, 4200];
+const gameIDList = [];
 var relatedGamesList = [];
 var page = 1;
 var upcomingPage = 1;
@@ -33,9 +32,9 @@ async function satisfyRateLimiting(endTime, startTime) {
 }
 
 async function startGameRequests() {
-    // await getGameList();
-    // await getUpcomingGameList();
-    // console.log(`${gameIDList.length} number of game details will be fetched.`);
+    await getGameList();
+    await getUpcomingGameList();
+    console.log(`${gameIDList.length} number of game details will be fetched.`);
 
     const gameList = [];
     for (let index = 0; index < gameIDList.length; index++) {

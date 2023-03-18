@@ -3,7 +3,7 @@ const { AnimeModel } = require("../mongodb");
 const { performance } = require('perf_hooks');
 
 var page = 1;
-// Not found ID's [44189, 48631, 49063, 49638, 50364, 51083, 52874, 42965, 35267, 38426, 40293]
+var upcomingPage = 1;
 const malIDList = [];
 
 async function satisfyRateLimiting(endTime, startTime) {
@@ -14,6 +14,7 @@ async function satisfyRateLimiting(endTime, startTime) {
 }
 
 async function startAnimeRequests() {
+    await getUpcomingAnimeList();
     await getAnimeList();
     console.log(`${malIDList.length} number of anime details will be fetched.`);
 
@@ -81,6 +82,54 @@ async function getAnimeList() {
         }
     } catch (error) {
         console.log("Anime error occured", error);
+        return;
+    }
+}
+
+async function getUpcomingAnimeList() {
+    const startTime = performance.now();
+
+    const upcomingAnimeAPI = `${jikanBaseURL}seasons/upcoming?page=${upcomingPage}`;
+
+    let request = new Request(
+        upcomingAnimeAPI, {
+            method: 'GET',
+        }
+    );
+
+    let result;
+    try {
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['status'] != null) {
+            throw Error(`${result['status']} ${result['message']}`)
+        }
+    } catch (error) {
+        console.log("\nUpcoming Anime request error occured", upcomingPage, error);
+        await sleep(1700);
+        await getUpcomingAnimeList();
+        return;
+    }
+
+    const endTime = performance.now();
+    await satisfyRateLimiting(endTime, startTime);
+
+    try {
+        const data = result['data'];
+        for (let index = 0; index < data.length; index++) {
+            const item = data[index];
+            malIDList.push(item['mal_id']);
+        }
+
+        const hasNext = result['pagination']['has_next_page'];
+        if (hasNext) {
+            upcomingPage += 1;
+            await getUpcomingAnimeList();
+        }
+    } catch (error) {
+        console.log("Upcoming Anime error occured", error);
         return;
     }
 }
