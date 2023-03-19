@@ -346,6 +346,7 @@ async function getGameDetails(rawgID) {
             developers: developerList,
             publishers: publisherList,
             stores: parseStoreJsonData(storesResult),
+            created_at: new Date(),
         });
 
         return tempGameModel;

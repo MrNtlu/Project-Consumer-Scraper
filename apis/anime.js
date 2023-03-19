@@ -305,6 +305,7 @@ async function getAnimeDetails(malID) {
                 themes: themeList,
                 demographics: demographicList,
                 relations: relationList,
+                created_at: new Date(),
             })
 
             return tempAnimeModel;

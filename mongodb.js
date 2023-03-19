@@ -173,6 +173,7 @@ const AnimeModel = mongoose.model(
                 source: [animeRelationSchema],
             },{ _id : false })
         ],
+        created_at: Date,
     }, {
         versionKey: false
     }
@@ -222,6 +223,7 @@ const GameModel = mongoose.model(
                 url: String,
             },{ _id : false })
         ],
+        created_at: Date,
     }, {
         versionKey: false
     }
