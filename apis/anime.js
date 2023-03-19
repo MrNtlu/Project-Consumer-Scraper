@@ -172,7 +172,7 @@ async function getAnimeDetails(malID) {
         }
     } catch (error) {
         console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
-        await sleep(1700);
+        await sleep(2000);
         return await getAnimeDetails(malID);
     }
 
@@ -307,7 +307,6 @@ async function getAnimeDetails(malID) {
                 relations: relationList,
             })
 
-            console.log("Anime", tempAnimeModel);
             return tempAnimeModel;
         }
 

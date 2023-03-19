@@ -272,7 +272,6 @@ async function getGameDetails(rawgID) {
 
     await getRelatedGames(rawgID);
 
-    console.log(detailsResult);
     try {
         const metacriticPlatformsJson = detailsResult['metacritic_platforms'];
         const metacriticPlatformsList = [];

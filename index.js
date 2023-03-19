@@ -6,8 +6,8 @@ const { StartMovieFileDownload } = require("./scrapers/tmdb");
 async function main() {
     try{
         await ConnectToMongoDB();
-        await StartAnimeRequests();
         await StartGameRequests();
+        await StartAnimeRequests();
         //StartMovieFileDownload();
         DisconnectFromMongoDB();
     } catch(err) {
