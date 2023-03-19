@@ -6,6 +6,8 @@ var page = 1;
 var upcomingPage = 1;
 const malIDList = [];
 
+//TODO: Exclude ecchi animes via APi, if not if anime has ecchi as genre don't save.
+
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 1300) {
         const sleepTimeInMillis = 1301 - (endTime - startTime);
@@ -157,16 +159,16 @@ async function getAnimeDetails(malID) {
                 await sleep(1500);
                 return null;
             } else if (result['status'] == 403) {
-                console.log("403 Failed to connect. Let's cool it down for 3.5 seconds.", malID, animeDetailsAPI);
-                await sleep(3500);
+                console.log("403 Failed to connect. Let's cool it down for 6 seconds.", malID, animeDetailsAPI);
+                await sleep(6000);
                 return await getAnimeDetails(malID);
             } else if (result['status'] == 408) {
-                console.log("408 Timeout exeption. Will wait for 3 seconds.", animeDetailsAPI);
-                await sleep(3000);
+                console.log("408 Timeout exeption. Will wait for 5 seconds.", animeDetailsAPI);
+                await sleep(5000);
                 return await getAnimeDetails(malID);
             } else {
                 console.log("Unexpected error occured.", result, animeDetailsAPI);
-                await sleep(2000);
+                await sleep(2500);
                 return await getAnimeDetails(malID);
             }
         }
