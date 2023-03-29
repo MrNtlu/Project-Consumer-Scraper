@@ -193,7 +193,7 @@ async function getMovies(movieID) {
             const item = genresJson[index];
             genreList.push({
                 name: item['name'],
-                tmdbID: item['id'],
+                tmdb_id: item['id'],
             });
         }
 

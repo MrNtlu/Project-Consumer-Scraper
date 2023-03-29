@@ -8,7 +8,7 @@ async function main() {
         await ConnectToMongoDB();
         await StartGameRequests();
         await StartAnimeRequests();
-        //StartMovieFileDownload();
+        await StartMovieFileDownload();
         DisconnectFromMongoDB();
     } catch(err) {
         console.log('Main Error occured', err);

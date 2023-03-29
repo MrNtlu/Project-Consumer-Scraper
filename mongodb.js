@@ -132,6 +132,8 @@ const AnimeModel = mongoose.model(
         mal_id: Number,
         mal_score: Number,
         mal_scored_by: Number,
+        mal_members: Number,
+        mal_favorites: Number,
         trailer: {
             type: String,
             required: false,
