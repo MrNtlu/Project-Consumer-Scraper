@@ -183,7 +183,7 @@ async function getMovies(movieID) {
                     ? `${tmdbBaseImageURL}original/${item['logo_path']}`
                     : null,
                 name: item['name'],
-                originCountry: item['origin_country']
+                origin_country: item['origin_country']
             });
         }
 
