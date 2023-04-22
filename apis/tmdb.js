@@ -8,10 +8,23 @@ const tmdbAPIKey = process.env.TMDB_API_KEY;
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
-    const streamingMovieAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
+    const streamingTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
+    const creditsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/credits?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
 
     let request = new Request(
         tvAPI, {
+            method: 'GET',
+        }
+    );
+
+    let streamingRequest = new Request(
+        streamingTVAPI, {
+            method: 'GET',
+        }
+    );
+
+    let creditsRequest = new Request(
+        creditsTVAPI, {
             method: 'GET',
         }
     );
@@ -31,21 +44,37 @@ async function getTVSeries(tvID) {
         return await getTVSeries(tvAPI);
     }
 
+    let streamingResult;
     try {
-        let streamingRequest = new Request(
-            streamingMovieAPI, {
-                method: 'GET',
-            }
-        );
-
-        const streamingResult = await fetch(streamingRequest).then((response) => {
+        streamingResult = await fetch(streamingRequest).then((response) => {
             return response.json();
         });
 
-        if (streamingResult['success'] != null) {
-            throw Error(streamingResult["status_message"] != null ? streamingResult["status_message"] : "Unknown error.")
+        if (result['success'] != null) {
+            throw Error(result["status_message"] != null ? result["status_message"] : "Unknown error.")
         }
+    } catch (error) {
+        console.log("\nTVSeries streaming request error occured", streamingTVAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvAPI);
+    }
 
+    let creditsResult;
+    try {
+        creditsResult = await fetch(creditsRequest).then((response) => {
+            return response.json();
+        });
+
+        if (creditsResult['success'] != null) {
+            throw Error(creditsResult["status_message"] != null ? creditsResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nTVSeries credits request error occured", creditsTVAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvAPI);
+    }
+
+    try {
         const productionCompaniesJson = result['production_companies'];
         const productionCompaniesList = [];
         for (let index = 0; index < productionCompaniesJson.length; index++) {
@@ -98,6 +127,19 @@ async function getTVSeries(tvID) {
             }
         }
 
+        const creditsJson = creditsResult['cast'];
+        const creditsList = [];
+        for (let index = 0; index < creditsJson.length; index++) {
+            const item = creditsJson[index];
+            if (item['known_for_department'] == "Acting") {
+                creditsList.push({
+                    name: item['name'],
+                    image: `${tmdbBaseImageURL}original/${item['profile_path']}`,
+                    character: item['character'],
+                });
+            }
+        }
+
         const tempTVModel = TVSeriesModel({
             title_original: result['original_name'],
             title_en: result['name'],
@@ -117,6 +159,7 @@ async function getTVSeries(tvID) {
             streaming: parseStreamingJsonData(streamingResult),
             networks: networkList,
             seasons: seasonList,
+            actors: creditsList,
             created_at: new Date()
         })
 
@@ -130,6 +173,7 @@ async function getTVSeries(tvID) {
 async function getMovies(movieID) {
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
+    const creditsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/credits?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
 
     let request = new Request(
         movieAPI, {
@@ -139,6 +183,12 @@ async function getMovies(movieID) {
 
     let streamingRequest = new Request(
         streamingMovieAPI, {
+            method: 'GET',
+        }
+    );
+
+    let creditsRequest = new Request(
+        creditsMovieAPI, {
             method: 'GET',
         }
     );
@@ -173,6 +223,21 @@ async function getMovies(movieID) {
         return await getMovies(movieID);
     }
 
+    let creditsResult;
+    try {
+        creditsResult = await fetch(creditsRequest).then((response) => {
+            return response.json();
+        });
+
+        if (creditsResult['success'] != null) {
+            throw Error(creditsResult["status_message"] != null ? creditsResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nMovie credits request error occured", creditsMovieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
+
     try {
         const productionCompaniesJson = result['production_companies'];
         const productionCompaniesList = [];
@@ -197,6 +262,19 @@ async function getMovies(movieID) {
             });
         }
 
+        const creditsJson = creditsResult['cast'];
+        const creditsList = [];
+        for (let index = 0; index < creditsJson.length; index++) {
+            const item = creditsJson[index];
+            if (item['known_for_department'] == "Acting") {
+                creditsList.push({
+                    name: item['name'],
+                    image: `${tmdbBaseImageURL}original/${item['profile_path']}`,
+                    character: item['character'],
+                });
+            }
+        }
+
         const tempMovieModel = MovieModel({
             title_original: result['original_title'],
             title_en: result['title'],
@@ -214,6 +292,7 @@ async function getMovies(movieID) {
             release_date: result['release_date'],
             genres: genreList,
             streaming: parseStreamingJsonData(streamingResult),
+            actors: creditsList,
             created_at: new Date()
         })
 

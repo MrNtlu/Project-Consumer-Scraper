@@ -74,10 +74,12 @@ async function readFile(filePath, isMovie) {
 
         const movieList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            const movieModel = await GetMovies(parsedNdJsonList[index].id);
+            if (parsedNdJsonList[index].popularity > 15) {
+                const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
-            if (movieModel != null) {
-                movieList.push(movieModel);
+                if (movieModel != null) {
+                    movieList.push(movieModel);
+                }
             }
         }
 
@@ -94,9 +96,11 @@ async function readFile(filePath, isMovie) {
 
         const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
-            if (tvModel != null) {
-                tvSeriesList.push(tvModel);
+            if (parsedNdJsonList[index].popularity > 15) {
+                const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
+                if (tvModel != null) {
+                    tvSeriesList.push(tvModel);
+                }
             }
         }
 

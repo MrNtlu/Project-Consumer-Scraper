@@ -137,21 +137,43 @@ async function getUpcomingAnimeList() {
 }
 
 async function getAnimeDetails(malID) {
-    const startTime = performance.now();
+    const baseAnimeDetailsAPI = jikanBaseURL + "anime/" + malID;
 
-    const animeDetailsAPI = jikanBaseURL + "anime/" + malID + "/full";
+    const animeDetailsAPI = `${baseAnimeDetailsAPI}/full`;
+    const animeCharactersAPI = `${baseAnimeDetailsAPI}/characters`;
 
     let request = new Request(
         animeDetailsAPI, {
             method: 'GET',
         }
-    )
+    );
+
+    let charRequest = new Request(
+        animeCharactersAPI, {
+            method: 'GET',
+        }
+    );
 
     let result;
+    let charResult;
     try {
+        const startTime = performance.now();
+
         result = await fetch(request).then((response) => {
             return response.json();
         });
+
+        const endTime = performance.now();
+        await satisfyRateLimiting(endTime, startTime);
+
+        const charStartTime = performance.now();
+
+        charResult = await fetch(charRequest).then((response) => {
+            return response.json();
+        });
+
+        const charEndTime = performance.now();
+        await satisfyRateLimiting(charEndTime, charStartTime);
 
         if (result['status'] != null) {
             if (result['status'] == 404) {
@@ -172,17 +194,50 @@ async function getAnimeDetails(malID) {
                 return await getAnimeDetails(malID);
             }
         }
+
+        if (charResult['status'] != null) {
+            if (charResult['status'] == 404) {
+                console.log("Anime Character 404 Not Found. Stopping the request.", malID, animeCharactersAPI);
+                await sleep(1500);
+                return null;
+            } else if (charResult['status'] == 403) {
+                console.log("403 Failed to connect. Let's cool it down for 6 seconds. AnimeChar ", malID, animeCharactersAPI);
+                await sleep(6000);
+                return await getAnimeDetails(malID);
+            } else if (charResult['status'] == 408) {
+                console.log("408 Timeout exeption. Will wait for 5 seconds. AnimeChar ", animeCharactersAPI);
+                await sleep(5000);
+                return await getAnimeDetails(malID);
+            } else {
+                console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);
+                await sleep(2500);
+                return await getAnimeDetails(malID);
+            }
+        }
     } catch (error) {
         console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
         await sleep(2000);
         return await getAnimeDetails(malID);
     }
 
-    const endTime = performance.now();
-    await satisfyRateLimiting(endTime, startTime);
-
     try {
         const jsonData = result['data'];
+
+        const charJsonData = charResult['data'];
+        const characterList = [];
+        if (charJsonData != undefined || charJsonData != null) {
+            for (let index = 0; index < charJsonData.length; index++) {
+
+                const item = charJsonData[index];
+                const characterJson = item['character'];
+                characterList.push({
+                    mal_id: characterJson['mal_id'],
+                    name: characterJson['name'],
+                    image: characterJson['images']['jpg']['image_url'],
+                    role: item['role']
+                });
+            }
+        }
 
         if (jsonData != undefined || jsonData != null) {
             const streamingJson = jsonData['streaming'];
@@ -307,6 +362,7 @@ async function getAnimeDetails(malID) {
                 themes: themeList,
                 demographics: demographicList,
                 relations: relationList,
+                characters: characterList,
                 created_at: new Date(),
             })
 

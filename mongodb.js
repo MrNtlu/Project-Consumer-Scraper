@@ -41,6 +41,12 @@ const productionAndCompanySchema = mongoose.Schema({
     origin_country: String,
 },{ _id : false });
 
+const actorSchema = mongoose.Schema({
+    name: String,
+    image: String,
+    character: String,
+},{ _id : false });
+
 const MovieModel = mongoose.model(
     "movies",
     mongoose.Schema({
@@ -60,6 +66,7 @@ const MovieModel = mongoose.model(
         release_date: String,
         genres: [genreSchema],
         streaming: [streamingSchema],
+        actors: [actorSchema],
         created_at: Date,
     }, {
         versionKey: false
@@ -96,6 +103,7 @@ const TVSeriesModel = mongoose.model(
                 image_url: String,
             },{ _id : false })
         ],
+        actors: [actorSchema],
         created_at: Date,
     }, {
         versionKey: false
@@ -105,20 +113,27 @@ const TVSeriesModel = mongoose.model(
 const animeNameURLSchema = mongoose.Schema({
     name: String,
     url: String,
-},{ _id : false })
+}, { _id : false })
 
 const animeGenreSchema = mongoose.Schema({
     name: String,
     url: String,
     mal_id: Number,
-},{ _id : false })
+}, { _id : false })
 
 const animeRelationSchema = mongoose.Schema({
     mal_id: Number,
     type: String,
     name: String,
     redirect_url: String,
-},{ _id : false })
+}, { _id : false })
+
+const animeCharacterSchema = mongoose.Schema({
+    mal_id: Number,
+    name: String,
+    image: String,
+    role: String,
+}, { _id: false })
 
 const AnimeModel = mongoose.model(
     "animes",
@@ -175,6 +190,7 @@ const AnimeModel = mongoose.model(
                 source: [animeRelationSchema],
             },{ _id : false })
         ],
+        characters: [animeCharacterSchema],
         created_at: Date,
     }, {
         versionKey: false
