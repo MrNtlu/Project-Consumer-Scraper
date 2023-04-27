@@ -170,6 +170,8 @@ async function getTVSeries(tvID) {
     }
 }
 
+//TODO Check if movie is adult/explicit(+18) or not, don't add movies without a genre.
+// Try to find a way.
 async function getMovies(movieID) {
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
