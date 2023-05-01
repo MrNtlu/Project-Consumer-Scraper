@@ -6,9 +6,10 @@ const ndjsonParser = require("ndjson-parse");
 const { GetMovies, GetTVSeries } = require("../apis/tmdb");
 const { MovieModel, TVSeriesModel } = require("../mongodb");
 
-const today = new Date();
+const date = new Date()
+const today = new Date(date.setDate(date.getDate() - 1));
 const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
-const day = (today.getUTCDate() - 1 < 10) ? '0' + (today.getUTCDate() - 1) : today.getUTCDate() - 1;
+const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();
 
 const movieDownloadURL = `movie_ids_${month}_${day}_${year}${tmdbFileExtension}`;
@@ -40,7 +41,7 @@ async function startMovieFileDownload() {
             console.log("Download status:", downloadStatus);
             pathList.push(path);
         } catch (error) {
-            console.log("Download failed", error);
+            console.log("Download failed", downloader, error);
         }
     }
 
@@ -77,7 +78,7 @@ async function readFile(filePath, isMovie) {
             if (parsedNdJsonList[index].popularity > 15) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
-                if (movieModel != null) {
+                if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
                     movieList.push(movieModel);
                 }
             }
@@ -98,7 +99,8 @@ async function readFile(filePath, isMovie) {
         for (let index = 0; index < parsedNdJsonList.length; index++) {
             if (parsedNdJsonList[index].popularity > 15) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
-                if (tvModel != null) {
+
+                if (tvModel != null && tvModel.first_air_date != "") {
                     tvSeriesList.push(tvModel);
                 }
             }
