@@ -8,8 +8,9 @@ const tmdbAPIKey = process.env.TMDB_API_KEY;
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
+    const translationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
-    const creditsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/credits?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
+    const creditsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
 
     let request = new Request(
         tvAPI, {
@@ -19,6 +20,12 @@ async function getTVSeries(tvID) {
 
     let streamingRequest = new Request(
         streamingTVAPI, {
+            method: 'GET',
+        }
+    );
+
+    let translationRequest = new Request(
+        translationsTVAPI, {
             method: 'GET',
         }
     );
@@ -41,7 +48,7 @@ async function getTVSeries(tvID) {
     } catch (error) {
         console.log("\nTVSeries request error occured", tvAPI, error);
         await sleep(750);
-        return await getTVSeries(tvAPI);
+        return await getTVSeries(tvID);
     }
 
     let streamingResult;
@@ -56,7 +63,22 @@ async function getTVSeries(tvID) {
     } catch (error) {
         console.log("\nTVSeries streaming request error occured", streamingTVAPI, error);
         await sleep(750);
-        return await getTVSeries(tvAPI);
+        return await getTVSeries(tvID);
+    }
+
+    let translationResult;
+    try {
+        translationResult = await fetch(translationRequest).then((response) => {
+            return response.json();
+        });
+
+        if (translationResult['success'] != null) {
+            throw Error(translationResult["status_message"] != null ? translationResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nTVSeries translation request error occured", translationsTVAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvID);
     }
 
     let creditsResult;
@@ -71,7 +93,7 @@ async function getTVSeries(tvID) {
     } catch (error) {
         console.log("\nTVSeries credits request error occured", creditsTVAPI, error);
         await sleep(750);
-        return await getTVSeries(tvAPI);
+        return await getTVSeries(tvID);
     }
 
     try {
@@ -140,6 +162,19 @@ async function getTVSeries(tvID) {
             }
         }
 
+        const translationsJson = translationResult['translations'];
+        const translationsList = [];
+        for (let index = 0; index < translationsJson.length; index++) {
+            const item = translationsJson[index];
+            translationsList.push({
+                lan_code: item['iso_3166_1'],
+                lan_name: item['name'],
+                lan_name_en: item['english_name'],
+                title: item['data']['title'],
+                description: item['data']['overview'],
+            });
+        }
+
         const tempTVModel = TVSeriesModel({
             title_original: result['original_name'],
             title_en: result['name'],
@@ -160,7 +195,8 @@ async function getTVSeries(tvID) {
             networks: networkList,
             seasons: seasonList,
             actors: creditsList,
-            created_at: new Date()
+            translations: translationsList,
+            created_at: new Date(),
         })
 
         return tempTVModel;
@@ -173,9 +209,10 @@ async function getTVSeries(tvID) {
 //TODO Check if movie is adult/explicit(+18) or not, don't add movies without a genre.
 // Try to find a way.
 async function getMovies(movieID) {
-    const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
-    const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
-    const creditsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/credits?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
+    const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${tmdbAPIKey}&language=en-US`;
+    const translationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
+    const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
+    const creditsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
 
     let request = new Request(
         movieAPI, {
@@ -185,6 +222,12 @@ async function getMovies(movieID) {
 
     let streamingRequest = new Request(
         streamingMovieAPI, {
+            method: 'GET',
+        }
+    );
+
+    let translationRequest = new Request(
+        translationsMovieAPI, {
             method: 'GET',
         }
     );
@@ -221,6 +264,21 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie streaming request error occured", streamingMovieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
+
+    let translationResult;
+    try {
+        translationResult = await fetch(translationRequest).then((response) => {
+            return response.json();
+        });
+
+        if (translationResult['success'] != null) {
+            throw Error(translationResult["status_message"] != null ? translationResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nMovie translations request error occured", translationsMovieAPI, error);
         await sleep(750);
         return await getMovies(movieID);
     }
@@ -277,6 +335,19 @@ async function getMovies(movieID) {
             }
         }
 
+        const translationsJson = translationResult['translations'];
+        const translationsList = [];
+        for (let index = 0; index < translationsJson.length; index++) {
+            const item = translationsJson[index];
+            translationsList.push({
+                lan_code: item['iso_3166_1'],
+                lan_name: item['name'],
+                lan_name_en: item['english_name'],
+                title: item['data']['title'],
+                description: item['data']['overview'],
+            });
+        }
+
         const tempMovieModel = MovieModel({
             title_original: result['original_title'],
             title_en: result['title'],
@@ -295,7 +366,8 @@ async function getMovies(movieID) {
             genres: genreList,
             streaming: parseStreamingJsonData(streamingResult),
             actors: creditsList,
-            created_at: new Date()
+            translations: translationsList,
+            created_at: new Date(),
         })
 
         return tempMovieModel;

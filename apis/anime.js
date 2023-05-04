@@ -33,9 +33,55 @@ async function startAnimeRequests() {
     if (animeList.length > 0) {
         console.log(`Inserting ${animeList.length} number of items to Anime DB.`);
 
-        //TODO: Find a way to delete only existing ones, if new data doesn't have X data don't delete.
         await AnimeModel.deleteMany({});
         await AnimeModel.insertMany(animeList);
+
+        for (let index = 0; index < animeList.length; index++) {
+            const element = animeList[index];
+
+            animeList[index] = {
+                'updateOne': {
+                    'filter': {'mal_id': element.mal_id},
+                    'update': {
+                        "$set": {
+                            title_original: element.title_original,
+                            title_en: element.title_en,
+                            title_jp: element.title_jp,
+                            description: element.description,
+                            image_url: element.image_url,
+                            small_image_url: element.small_image_url,
+                            mal_id: element.mal_id,
+                            mal_score: element.mal_score,
+                            mal_scored_by: element.mal_scored_by,
+                            mal_members: element.mal_members,
+                            mal_favorites: element.mal_favorites,
+                            trailer: element.trailer,
+                            type: element.type,
+                            source: element.source,
+                            episodes: element.episodes,
+                            season: element.season,
+                            year: element.year,
+                            status: element.status,
+                            is_airing: element.is_airing,
+                            streaming: element.streaming,
+                            aired: element.aired,
+                            age_rating: element.age_rating,
+                            producers: element.producers,
+                            studios: element.studios,
+                            genres: element.genres,
+                            themes: element.themes,
+                            demographics: element.demographics,
+                            relations: element.relations,
+                            characters: element.characters,
+                            created_at: new Date(),
+                        }
+                    },
+                    'upsert': true,
+                }
+            }
+        }
+        await AnimeModel.bulkWrite(animeList);
+        console.log(`Inserted ${animeList.length} number of items to Anime DB.`);
     }
     console.log("Animes are DONE!");
 }

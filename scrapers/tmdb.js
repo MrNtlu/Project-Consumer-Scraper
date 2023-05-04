@@ -113,6 +113,7 @@ async function readFile(filePath, isMovie) {
                                 genres: element.genres,
                                 streaming: element.streaming,
                                 actors: element.actors,
+                                translations: element.translations,
                                 created_at: new Date(),
                             }
                         },
@@ -168,6 +169,7 @@ async function readFile(filePath, isMovie) {
                                 networks: element.networks,
                                 seasons: element.seasons,
                                 actors: element.actors,
+                                translations: element.translations,
                                 created_at: new Date(),
                             }
                         },

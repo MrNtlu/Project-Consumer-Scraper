@@ -47,6 +47,14 @@ const actorSchema = mongoose.Schema({
     character: String,
 },{ _id : false });
 
+const translationSchema = mongoose.Schema({
+    lan_code: String,
+    lan_name: String,
+    lan_name_en: String,
+    title: String,
+    description: String,
+},{ _id : false })
+
 const MovieModel = mongoose.model(
     "movies",
     mongoose.Schema({
@@ -67,6 +75,7 @@ const MovieModel = mongoose.model(
         genres: [genreSchema],
         streaming: [streamingSchema],
         actors: [actorSchema],
+        translations: [translationSchema],
         created_at: Date,
     }, {
         versionKey: false
@@ -104,6 +113,7 @@ const TVSeriesModel = mongoose.model(
             },{ _id : false })
         ],
         actors: [actorSchema],
+        translations: [translationSchema],
         created_at: Date,
     }, {
         versionKey: false

@@ -51,9 +51,43 @@ async function startGameRequests() {
     if (gameList.length > 0) {
         console.log(`Inserting ${gameList.length} number of items to Game DB`);
 
-        //TODO: Find a way to delete only existing ones, if new data doesn't have X data don't delete.
-        await GameModel.deleteMany({});
-        await GameModel.insertMany(gameList);
+        for (let index = 0; index < gameList.length; index++) {
+            const element = gameList[index];
+
+            gameList[index] = {
+                'updateOne': {
+                    'filter': {'rawg_id': element.rawg_id},
+                    'update': {
+                        "$set": {
+                            title: element.title,
+                            title_original: element.title_original,
+                            description: element.description,
+                            tba: element.tba,
+                            rawg_id: element.rawg_id,
+                            rawg_rating: element.rawg_rating,
+                            rawg_rating_count: element.rawg_rating_count,
+                            metacritic_score: element.metacritic_score,
+                            metacritic_score_by_platform: element.metacritic_score_by_platform,
+                            release_date: element.release_date,
+                            background_image: element.background_image,
+                            subreddit:element.subreddit,
+                            age_rating: element.age_rating,
+                            related_games: element.related_games,
+                            genres: element.genres,
+                            tags: element.tags,
+                            platforms: element.platforms,
+                            developers: element.developers,
+                            publishers: element.publishers,
+                            stores: element.stores,
+                            created_at: new Date(),
+                        }
+                    }
+                },
+                'upsert': true,
+            }
+        }
+        await GameModel.bulkWrite(gameList);
+        console.log(`Inserted ${gameList.length} number of items to Game DB`);
     }
     console.log("Games are DONE!");
 }
