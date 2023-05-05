@@ -33,9 +33,6 @@ async function startAnimeRequests() {
     if (animeList.length > 0) {
         console.log(`Inserting ${animeList.length} number of items to Anime DB.`);
 
-        await AnimeModel.deleteMany({});
-        await AnimeModel.insertMany(animeList);
-
         for (let index = 0; index < animeList.length; index++) {
             const element = animeList[index];
 

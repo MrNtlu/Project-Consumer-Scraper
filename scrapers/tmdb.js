@@ -128,7 +128,7 @@ async function readFile(filePath, isMovie) {
         console.log("TVSeries fetch started.");
 
         const tvSeriesList = [];
-        for (let index = 0; index < 50; index++) {
+        for (let index = 0; index < parsedNdJsonList.length; index++) {
             if (parsedNdJsonList[index].popularity > 15) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
