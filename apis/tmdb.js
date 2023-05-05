@@ -170,7 +170,7 @@ async function getTVSeries(tvID) {
                 lan_code: item['iso_3166_1'],
                 lan_name: item['name'],
                 lan_name_en: item['english_name'],
-                title: item['data']['title'],
+                title: item['data']['name'],
                 description: item['data']['overview'],
             });
         }
