@@ -3,7 +3,7 @@ const gunzip = require("gunzip-file");
 const Downloader = require("nodejs-file-downloader");
 const { tmdbFileBaseURL, tmdbFileExtension, sleep } = require("../constants");
 const ndjsonParser = require("ndjson-parse");
-const { GetMovies, GetTVSeries } = require("../apis/tmdb");
+const { GetMovies, GetTVSeries, GetUpcomingMovies } = require("../apis/tmdb");
 const { MovieModel, TVSeriesModel } = require("../mongodb");
 
 const date = new Date()
@@ -71,9 +71,9 @@ async function readFile(filePath, isMovie) {
     console.log(`Total ${isMovie ? "movie" : "tv series"} items: `, parsedNdJsonList.length);
 
     if (isMovie) {
-        console.log("Movie fetch started.");
-
         const movieList = [];
+
+        console.log("Movie fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
             if (parsedNdJsonList[index].popularity > 40) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
@@ -83,8 +83,24 @@ async function readFile(filePath, isMovie) {
                 }
             }
         }
-
         console.log("Movie fetch Ended.");
+
+        console.log("Upcoming Movie Fetch Started");
+        const upcomingMovieList = await GetUpcomingMovies();
+
+        for (let index = 0; index < upcomingMovieList.length; index++) {
+            const element = upcomingMovieList[index];
+
+            if (movieList.find(movie => movie.id == element.toString()) == undefined) {
+                const movieModel = await GetMovies(parsedNdJsonList[index].id);
+
+                if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
+                    movieList.push(movieModel);
+                }
+            }
+        }
+        console.log("Upcoming Movie Fetch Ended");
+
         if (movieList.length > 0) {
             console.log(`Inserting ${movieList.length} number of items to Movie DB.`);
 

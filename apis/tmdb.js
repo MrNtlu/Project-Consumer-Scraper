@@ -1,10 +1,10 @@
-const { tmdbBaseMovieAPIURL, tmdbBaseImageURL, tmdbBaseTVSeriesAPIURL } = require("../constants");
+const { tmdbBaseMovieAPIURL, tmdbBaseImageURL, tmdbBaseTVSeriesAPIURL, sleep } = require("../constants");
 const { MovieModel, TVSeriesModel } = require("../mongodb");
 require('dotenv').config()
 
 const tmdbAPIKey = process.env.TMDB_API_KEY;
-
-//TODO: Check status code and retry again, if not found (status code 34) don't try again.
+var page = 1;
+const movieIDList = [];
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
@@ -206,8 +206,51 @@ async function getTVSeries(tvID) {
     }
 }
 
-//TODO Check if movie is adult/explicit(+18) or not, don't add movies without a genre.
-// Try to find a way.
+async function getUpcomingMovies() {
+    const upcomingMovieAPI = `${tmdbBaseMovieAPIURL}upcoming?page=${page}&api_key=${tmdbAPIKey}&language=en-US`;
+
+    let request = new Request(
+        upcomingMovieAPI, {
+            method: 'GET',
+        }
+    );
+
+    let result;
+    try {
+        result = await fetch(request).then((response) => {
+            return response.json();
+        });
+
+        if (result['success'] != null) {
+            throw Error(result["status_message"] != null ? result["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nUpcoming movie request error occured", page, error);
+        await sleep(750);
+        return await getUpcomingMovies();
+    }
+
+    try {
+        const data = result['results'];
+        for (let index = 0; index < data.length; index++) {
+            const item = data[index];
+            movieIDList.push(item['id']);
+        }
+
+        const totalPages = result['total_pages'];
+        if (page < totalPages) {
+            page += 1;
+            return await getUpcomingMovies();
+        } else {
+            return movieIDList;
+        }
+    } catch (error) {
+        console.log("Upcoming movie error occured", error);
+        await sleep(750);
+        return await getUpcomingMovies();
+    }
+}
+
 async function getMovies(movieID) {
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${tmdbAPIKey}&language=en-US`;
     const translationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
@@ -439,5 +482,6 @@ function parseStreamingJsonData(result) {
     }
 }
 
+module.exports.GetUpcomingMovies = getUpcomingMovies;
 module.exports.GetMovies = getMovies;
 module.exports.GetTVSeries = getTVSeries;
