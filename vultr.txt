@@ -12,6 +12,8 @@ pm2 logs <process-name>
 
 pm2 stop all
 
+pm2 delete <process-name>
+
 //Cron
 
 crontab -e // Edit

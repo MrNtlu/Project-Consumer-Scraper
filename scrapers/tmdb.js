@@ -92,9 +92,9 @@ async function readFile(filePath, isMovie) {
             const element = upcomingMovieList[index];
 
             if (movieList.find(movie => movie.id == element.toString()) == undefined) {
-                const movieModel = await GetMovies(parsedNdJsonList[index].id);
+                const movieModel = await GetMovies(upcomingMovieList[index]);
 
-                if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
+                if (movieModel != null) {
                     movieList.push(movieModel);
                 }
             }
@@ -153,8 +153,8 @@ async function readFile(filePath, isMovie) {
                 }
             }
         }
-
         console.log("TVSeries fetch ended.");
+
         if (tvSeriesList.length > 0) {
             console.log(`Inserting ${tvSeriesList.length} number of items to TVSeries DB.`);
 

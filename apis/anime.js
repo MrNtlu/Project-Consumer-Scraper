@@ -22,7 +22,7 @@ async function startAnimeRequests() {
 
     const animeList = [];
     for (let index = 0; index < malIDList.length; index++) {
-        const animeModel = await getAnimeDetails(malIDList[index]);
+        const animeModel = await getAnimeDetails(malIDList[index], 0);
 
         if (animeModel != null) {
             animeList.push(animeModel);
@@ -179,7 +179,7 @@ async function getUpcomingAnimeList() {
     }
 }
 
-async function getAnimeDetails(malID) {
+async function getAnimeDetails(malID, charRetryCount) {
     const baseAnimeDetailsAPI = jikanBaseURL + "anime/" + malID;
 
     const animeDetailsAPI = `${baseAnimeDetailsAPI}/full`;
@@ -201,22 +201,11 @@ async function getAnimeDetails(malID) {
     let charResult;
     try {
         const startTime = performance.now();
-
         result = await fetch(request).then((response) => {
             return response.json();
         });
-
         const endTime = performance.now();
         await satisfyRateLimiting(endTime, startTime);
-
-        const charStartTime = performance.now();
-
-        charResult = await fetch(charRequest).then((response) => {
-            return response.json();
-        });
-
-        const charEndTime = performance.now();
-        await satisfyRateLimiting(charEndTime, charStartTime);
 
         if (result['status'] != null) {
             if (result['status'] == 404) {
@@ -224,43 +213,54 @@ async function getAnimeDetails(malID) {
                 await sleep(1500);
                 return null;
             } else if (result['status'] == 403) {
-                console.log("403 Failed to connect. Let's cool it down for 6 seconds.", malID, animeDetailsAPI);
-                await sleep(6000);
+                console.log("403 Failed to connect. Let's cool it down for 10 seconds.", malID, animeDetailsAPI);
+                await sleep(10000);
                 return await getAnimeDetails(malID);
             } else if (result['status'] == 408) {
-                console.log("408 Timeout exeption. Will wait for 5 seconds.", animeDetailsAPI);
-                await sleep(5000);
+                console.log("408 Timeout exeption. Will wait for 12 seconds.", animeDetailsAPI);
+                await sleep(12000);
                 return await getAnimeDetails(malID);
             } else {
                 console.log("Unexpected error occured.", result, animeDetailsAPI);
-                await sleep(2500);
+                await sleep(12500);
                 return await getAnimeDetails(malID);
             }
         }
 
-        if (charResult['status'] != null) {
-            if (charResult['status'] == 404) {
-                console.log("Anime Character 404 Not Found. Stopping the request.", malID, animeCharactersAPI);
-                await sleep(1500);
-                return null;
-            } else if (charResult['status'] == 403) {
-                console.log("403 Failed to connect. Let's cool it down for 6 seconds. AnimeChar ", malID, animeCharactersAPI);
-                await sleep(6000);
-                return await getAnimeDetails(malID);
-            } else if (charResult['status'] == 408) {
-                console.log("408 Timeout exeption. Will wait for 5 seconds. AnimeChar ", animeCharactersAPI);
-                await sleep(5000);
-                return await getAnimeDetails(malID);
-            } else {
-                console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);
-                await sleep(2500);
-                return await getAnimeDetails(malID);
+        if (charRetryCount <= 10) {
+            const charStartTime = performance.now();
+            charResult = await fetch(charRequest).then((response) => {
+                return response.json();
+            });
+            const charEndTime = performance.now();
+            await satisfyRateLimiting(charEndTime, charStartTime);
+
+            if (charResult['status'] != null) {
+                const newRetryCount = charRetryCount + 1;
+
+                if (charResult['status'] == 404) {
+                    console.log("Anime Character 404 Not Found. Stopping the request.", malID, animeCharactersAPI);
+                    await sleep(1500);
+                    return await getAnimeDetails(malID, 11);
+                } else if (charResult['status'] == 403) {
+                    console.log("403 Failed to connect. Let's cool it down for 10 seconds. AnimeChar ", malID, animeCharactersAPI);
+                    await sleep(10000);
+                    return await getAnimeDetails(malID, newRetryCount);
+                } else if (charResult['status'] == 408) {
+                    console.log("408 Timeout exeption. Will wait for 12 seconds. AnimeChar ", animeCharactersAPI);
+                    await sleep(12000);
+                    return await getAnimeDetails(malID, newRetryCount);
+                } else {
+                    console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);
+                    await sleep(12500);
+                    return await getAnimeDetails(malID, newRetryCount);
+                }
             }
         }
     } catch (error) {
         console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
-        await sleep(2000);
-        return await getAnimeDetails(malID);
+        await sleep(5000);
+        return await getAnimeDetails(malID, charRetryCount);
     }
 
     try {
