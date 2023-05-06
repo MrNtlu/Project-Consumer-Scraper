@@ -300,7 +300,7 @@ async function getGameDetails(rawgID) {
         }
     } catch (error) {
         console.log("\nGame details request error occured", rawgID, error);
-        await sleep(1500);
+        await sleep(2500);
         return await getGameDetails(rawgID);
     }
 
@@ -406,14 +406,14 @@ async function getRelatedGames(rawgID) {
         });
 
         if (result['detail'] != null || result['error'] != null) {
-            console.log("\nRelated Game request error occured", rawgID, result);
+            console.log("\nRelated Game inner request error occured", rawgID, result);
             await sleep(1500);
             await getRelatedGames(rawgID);
             return;
         }
     } catch (error) {
         console.log("\nRelated Game request error occured", rawgID, error);
-        await sleep(1500);
+        await sleep(2500);
         await getRelatedGames(rawgID);
         return;
     }

@@ -9,8 +9,8 @@ const malIDList = [];
 //TODO: Exclude ecchi animes via APi, if not if anime has ecchi as genre don't save.
 
 async function satisfyRateLimiting(endTime, startTime) {
-    if (endTime - startTime < 1300) {
-        const sleepTimeInMillis = 1301 - (endTime - startTime);
+    if (endTime - startTime < 3000) {
+        const sleepTimeInMillis = 3001 - (endTime - startTime);
         await sleep(sleepTimeInMillis);
     }
 }
@@ -227,7 +227,7 @@ async function getAnimeDetails(malID, charRetryCount) {
             }
         }
 
-        if (charRetryCount <= 10) {
+        if (charRetryCount <= 15) {
             const charStartTime = performance.now();
             charResult = await fetch(charRequest).then((response) => {
                 return response.json();
@@ -239,16 +239,16 @@ async function getAnimeDetails(malID, charRetryCount) {
                 const newRetryCount = charRetryCount + 1;
 
                 if (charResult['status'] == 404) {
-                    console.log("Anime Character 404 Not Found. Stopping the request.", malID, animeCharactersAPI);
+                    console.log("Anime Character 404 Not Found. Canceling the character request.", malID, animeCharactersAPI);
                     await sleep(1500);
-                    return await getAnimeDetails(malID, 11);
+                    return await getAnimeDetails(malID, 16);
                 } else if (charResult['status'] == 403) {
-                    console.log("403 Failed to connect. Let's cool it down for 10 seconds. AnimeChar ", malID, animeCharactersAPI);
-                    await sleep(10000);
+                    console.log("403 Failed to connect. Let's cool it down for 15 seconds. AnimeChar ", malID, animeCharactersAPI);
+                    await sleep(15000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else if (charResult['status'] == 408) {
-                    console.log("408 Timeout exeption. Will wait for 12 seconds. AnimeChar ", animeCharactersAPI);
-                    await sleep(12000);
+                    console.log("408 Timeout exeption. Will wait for 22 seconds. AnimeChar ", animeCharactersAPI);
+                    await sleep(22000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else {
                     console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);
@@ -266,21 +266,25 @@ async function getAnimeDetails(malID, charRetryCount) {
     try {
         const jsonData = result['data'];
 
-        const charJsonData = charResult['data'];
         const characterList = [];
-        if (charJsonData != undefined || charJsonData != null) {
-            for (let index = 0; index < charJsonData.length; index++) {
+        if (charResult != undefined && charResult['data'] != undefined) {
+            const charJsonData = charResult['data'];
 
-                const item = charJsonData[index];
-                const characterJson = item['character'];
-                characterList.push({
-                    mal_id: characterJson['mal_id'],
-                    name: characterJson['name'],
-                    image: characterJson['images']['jpg']['image_url'],
-                    role: item['role']
-                });
+            if (charJsonData != undefined || charJsonData != null) {
+                for (let index = 0; index < charJsonData.length; index++) {
+
+                    const item = charJsonData[index];
+                    const characterJson = item['character'];
+                    characterList.push({
+                        mal_id: characterJson['mal_id'],
+                        name: characterJson['name'],
+                        image: characterJson['images']['jpg']['image_url'],
+                        role: item['role']
+                    });
+                }
             }
         }
+
 
         if (jsonData != undefined || jsonData != null) {
             const streamingJson = jsonData['streaming'];
@@ -414,7 +418,7 @@ async function getAnimeDetails(malID, charRetryCount) {
 
         return null;
     } catch (error) {
-        console.log("Error occured", malID, error);
+        console.log("Anime error occured", malID, error);
         return null;
     }
 }
