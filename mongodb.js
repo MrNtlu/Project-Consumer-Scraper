@@ -63,6 +63,7 @@ const MovieModel = mongoose.model(
         description: String,
         image_url: String,
         small_image_url: String,
+        backdrop: String,
         status: String,
         length: Number,
         imdb_id: String,

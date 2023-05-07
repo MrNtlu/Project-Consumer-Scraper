@@ -391,12 +391,27 @@ async function getMovies(movieID) {
             });
         }
 
+        var backdropImage = null
+        if (result['backdrop_path'] != null && result['backdrop_path'] != undefined) {
+            backdropImage = result['backdrop_path']
+        } else if (
+            result['belongs_to_collection'] != null && result['belongs_to_collection'] != undefined &&
+            result['belongs_to_collection']['backdrop_path'] != null && result['belongs_to_collection']['backdrop_path'] != undefined
+        ) {
+            backdropImage = result['belongs_to_collection']['backdrop_path']
+        }
+
+        if (backdropImage != null) {
+            backdropImage = `${tmdbBaseImageURL}original${backdropImage}`
+        }
+
         const tempMovieModel = MovieModel({
             title_original: result['original_title'],
             title_en: result['title'],
             description: result['overview'],
-            image_url: `${tmdbBaseImageURL}original/${result['poster_path']}`,
-            small_image_url: `${tmdbBaseImageURL}w342/${result['poster_path']}`,
+            image_url: `${tmdbBaseImageURL}original${result['poster_path']}`,
+            small_image_url: `${tmdbBaseImageURL}w342${result['poster_path']}`,
+            backdrop: backdropImage,
             status: result['status'],
             length: result['runtime'],
             imdb_id: result['imdb_id'],
