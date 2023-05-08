@@ -228,12 +228,11 @@ async function getAnimeDetails(malID, charRetryCount) {
         }
 
         if (charRetryCount <= 15) {
-            const charStartTime = performance.now();
             charResult = await fetch(charRequest).then((response) => {
                 return response.json();
             });
-            const charEndTime = performance.now();
-            await satisfyRateLimiting(charEndTime, charStartTime);
+
+            await sleep(5000);
 
             if (charResult['status'] != null) {
                 const newRetryCount = charRetryCount + 1;
