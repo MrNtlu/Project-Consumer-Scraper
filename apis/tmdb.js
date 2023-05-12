@@ -234,7 +234,10 @@ async function getUpcomingMovies() {
         const data = result['results'];
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
-            movieIDList.push(item['id']);
+
+            if (data['popularity'] > 19) {
+                movieIDList.push(item['id']);
+            }
         }
 
         const totalPages = result['total_pages'];

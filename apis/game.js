@@ -8,6 +8,7 @@ const rawgAPIKeyList = [
     process.env.RAWG_ALT_2_API_KEY,
     process.env.RAWG_ALT_3_API_KEY,
     process.env.RAWG_ALT_4_API_KEY,
+    process.env.RAWG_ALT_5_API_KEY,
 ];
 var rawgAPIKey = process.env.RAWG_API_KEY;
 var apiKeyPointer = 0;

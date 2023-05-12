@@ -15,6 +15,7 @@ async function satisfyRateLimiting(endTime, startTime) {
     }
 }
 
+//TODO Limit pages
 async function startAnimeRequests() {
     await getUpcomingAnimeList();
     await getAnimeList();
