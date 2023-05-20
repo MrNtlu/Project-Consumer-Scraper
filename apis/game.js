@@ -82,13 +82,18 @@ async function startGameRequests() {
                             stores: element.stores,
                             created_at: new Date(),
                         }
-                    }
-                },
-                'upsert': true,
+                    },
+                    'upsert': true,
+                }
             }
         }
-        await GameModel.bulkWrite(gameList);
-        console.log(`Inserted ${gameList.length} number of items to Game DB`);
+
+        try {
+            await GameModel.bulkWrite(gameList);
+            console.log(`Inserted ${gameList.length} number of items to Game DB`);
+        } catch (error) {
+            console.log(`Error occured while inserting games ${error}`);
+        }
     }
     console.log("Games are DONE!");
 }

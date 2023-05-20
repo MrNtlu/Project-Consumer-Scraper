@@ -11,7 +11,6 @@ const malIDList = [];
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 3000) {
         const sleepTimeInMillis = 3001 - (endTime - startTime);
-        console.log("Sleeping for", sleepTimeInMillis);
         await sleep(sleepTimeInMillis);
     }
 }
@@ -226,9 +225,9 @@ async function getAnimeDetails(malID, charRetryCount) {
             }
         }
 
-        await sleep(4000);
+        await sleep(10000);
 
-        if (charRetryCount <= 15) {
+        if (charRetryCount <= 25) {
             charResult = await fetch(charRequest).then((response) => {
                 return response.json();
             });
@@ -238,15 +237,15 @@ async function getAnimeDetails(malID, charRetryCount) {
 
                 if (charResult['status'] == 404) {
                     console.log("Anime Character 404 Not Found. Canceling the character request.", malID, animeCharactersAPI);
-                    await sleep(1500);
+                    await sleep(3000);
                     return await getAnimeDetails(malID, 16);
                 } else if (charResult['status'] == 403) {
-                    console.log("403 Failed to connect. Let's cool it down for 20 seconds. AnimeChar ", malID, animeCharactersAPI);
-                    await sleep(20000);
+                    console.log("403 Failed to connect. Let's cool it down for 45 seconds. AnimeChar ", malID, animeCharactersAPI);
+                    await sleep(45000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else if (charResult['status'] == 408) {
-                    console.log("408 Timeout exeption. Will wait for 25 seconds. AnimeChar ", animeCharactersAPI);
-                    await sleep(25000);
+                    console.log("408 Timeout exeption. Will wait for 1 minute. AnimeChar ", animeCharactersAPI);
+                    await sleep(60000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else {
                     console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);
@@ -255,7 +254,7 @@ async function getAnimeDetails(malID, charRetryCount) {
                 }
             }
 
-            await sleep(4000);
+            await sleep(10000);
         }
     } catch (error) {
         console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
