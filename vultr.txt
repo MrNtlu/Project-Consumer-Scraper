@@ -21,3 +21,7 @@ crontab -e // Edit
 crontab -l // List
 
 sudo service cron status // Status
+
+sudo systemctl disable cron
+
+sudo systemctl enable cron

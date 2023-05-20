@@ -96,7 +96,7 @@ async function startGameRequests() {
 async function getGameList() {
     const startTime = performance.now();
 
-    const gameAPI = `${rawgBaseURL}games?page=${page}&key=${rawgAPIKey}&metacritic=1,100&parent_platforms=1,2,3,6,7`;
+    const gameAPI = `${rawgBaseURL}games?page=${page}&key=${rawgAPIKey}&metacritic=1,100&parent_platforms=1,2,3,6,7&page_size=50`;
 
     let request = new Request(
         gameAPI, {
@@ -205,7 +205,9 @@ async function getUpcomingGameList() {
         const results = result['results'];
         for (let index = 0; index < results.length; index++) {
             const item = results[index];
-            gameIDList.push(item['id']);
+            if (!gameIDList.includes(item['id'])) {
+                gameIDList.push(item['id']);
+            }
         }
 
         const shouldIterate = result['next'];

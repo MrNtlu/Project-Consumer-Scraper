@@ -9,13 +9,14 @@ const malIDList = [];
 //TODO: Exclude ecchi animes via APi, if not if anime has ecchi as genre don't save.
 
 async function satisfyRateLimiting(endTime, startTime) {
-    if (endTime - startTime < 5000) {
-        const sleepTimeInMillis = 5001 - (endTime - startTime);
+    if (endTime - startTime < 3000) {
+        const sleepTimeInMillis = 3001 - (endTime - startTime);
+        console.log("Sleeping for", sleepTimeInMillis);
         await sleep(sleepTimeInMillis);
     }
 }
 
-//TODO Limit pages
+//TODO Pages are limited to 200, remove in the future.
 async function startAnimeRequests() {
     await getUpcomingAnimeList();
     await getAnimeList();
@@ -122,7 +123,7 @@ async function getAnimeList() {
         }
 
         const hasNext = result['pagination']['has_next_page'];
-        if (hasNext) {
+        if (hasNext && page < 200) {
             page += 1;
             await getAnimeList();
         }
@@ -201,12 +202,9 @@ async function getAnimeDetails(malID, charRetryCount) {
     let result;
     let charResult;
     try {
-        const startTime = performance.now();
         result = await fetch(request).then((response) => {
             return response.json();
         });
-        const endTime = performance.now();
-        await satisfyRateLimiting(endTime, startTime);
 
         if (result['status'] != null) {
             if (result['status'] == 404) {
@@ -228,12 +226,12 @@ async function getAnimeDetails(malID, charRetryCount) {
             }
         }
 
+        await sleep(4000);
+
         if (charRetryCount <= 15) {
             charResult = await fetch(charRequest).then((response) => {
                 return response.json();
             });
-
-            await sleep(5000);
 
             if (charResult['status'] != null) {
                 const newRetryCount = charRetryCount + 1;
@@ -256,6 +254,8 @@ async function getAnimeDetails(malID, charRetryCount) {
                     return await getAnimeDetails(malID, newRetryCount);
                 }
             }
+
+            await sleep(4000);
         }
     } catch (error) {
         console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
@@ -284,7 +284,6 @@ async function getAnimeDetails(malID, charRetryCount) {
                 }
             }
         }
-
 
         if (jsonData != undefined || jsonData != null) {
             const streamingJson = jsonData['streaming'];
