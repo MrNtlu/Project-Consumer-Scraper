@@ -238,7 +238,7 @@ async function getAnimeDetails(malID, charRetryCount) {
                 if (charResult['status'] == 404) {
                     console.log("Anime Character 404 Not Found. Canceling the character request.", malID, animeCharactersAPI);
                     await sleep(3000);
-                    return await getAnimeDetails(malID, 16);
+                    return await getAnimeDetails(malID, 999);
                 } else if (charResult['status'] == 403) {
                     console.log("403 Failed to connect. Let's cool it down for 45 seconds. AnimeChar ", malID, animeCharactersAPI);
                     await sleep(45000);
