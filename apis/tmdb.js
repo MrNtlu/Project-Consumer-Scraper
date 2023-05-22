@@ -175,12 +175,22 @@ async function getTVSeries(tvID) {
             });
         }
 
+        var backdropImage = null
+        if (result['backdrop_path'] != null && result['backdrop_path'] != undefined) {
+            backdropImage = result['backdrop_path']
+        }
+
+        if (backdropImage != null) {
+            backdropImage = `${tmdbBaseImageURL}original${backdropImage}`
+        }
+
         const tempTVModel = TVSeriesModel({
             title_original: result['original_name'],
             title_en: result['name'],
             description: result['overview'],
             image_url: `${tmdbBaseImageURL}original/${result['poster_path']}`,
             small_image_url: `${tmdbBaseImageURL}w342/${result['poster_path']}`,
+            backdrop: backdropImage,
             status: result['status'],
             tmdb_id: result['id'],
             tmdb_popularity: result['popularity'],

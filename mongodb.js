@@ -91,6 +91,7 @@ const TVSeriesModel = mongoose.model(
         description: String,
         image_url: String,
         small_image_url: String,
+        backdrop: String,
         status: String,
         tmdb_id: String,
         tmdb_popularity: Number,
