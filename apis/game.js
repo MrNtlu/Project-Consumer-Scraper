@@ -280,7 +280,7 @@ async function getGameDetails(rawgID) {
                     return null;
                 }
             } else {
-                console.log("Unexpected game details error occured.", detailsResult);
+                console.log("Unexpected game details error occured.", gameDetailsRequest, detailsResult);
                 await sleep(2000);
                 return await getGameDetails(rawgID);
             }
@@ -301,13 +301,13 @@ async function getGameDetails(rawgID) {
                     return null;
                 }
             } else {
-                console.log("Unexpected game details error occured.", storesResult);
+                console.log("Unexpected game store details error occured.", storesRequest, storesResult);
                 await sleep(2000);
                 return await getGameDetails(rawgID);
             }
         }
     } catch (error) {
-        console.log("\nGame details request error occured", rawgID, error);
+        console.log("\nGame details request error occured", rawgID, gameDetailsRequest, error);
         await sleep(2500);
         return await getGameDetails(rawgID);
     }
@@ -393,7 +393,7 @@ async function getGameDetails(rawgID) {
 
         return tempGameModel;
     } catch (error) {
-        console.log("Game details error occured", rawgID, error);
+        console.log("Game details error occured", rawgID, gameDetailsRequest, error);
         return null;
     }
 }
@@ -414,13 +414,13 @@ async function getRelatedGames(rawgID) {
         });
 
         if (result['detail'] != null || result['error'] != null) {
-            console.log("\nRelated Game inner request error occured", rawgID, result);
+            console.log("\nRelated Game inner request error occured", rawgID, request, result);
             await sleep(1500);
             await getRelatedGames(rawgID);
             return;
         }
     } catch (error) {
-        console.log("\nRelated Game request error occured", rawgID, error);
+        console.log("\nRelated Game request error occured", rawgID, request, error);
         await sleep(2500);
         await getRelatedGames(rawgID);
         return;
@@ -451,7 +451,7 @@ async function getRelatedGames(rawgID) {
             await getRelatedGames(rawgID);
         }
     } catch (error) {
-        console.log("Related games error occured", error);
+        console.log("Related games error occured", request, error);
         return;
     }
 }

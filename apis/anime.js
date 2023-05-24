@@ -225,7 +225,7 @@ async function getAnimeDetails(malID, charRetryCount) {
             }
         }
 
-        await sleep(10000);
+        await sleep(30000);
 
         if (charRetryCount <= 25) {
             charResult = await fetch(charRequest).then((response) => {
@@ -244,8 +244,8 @@ async function getAnimeDetails(malID, charRetryCount) {
                     await sleep(45000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else if (charResult['status'] == 408) {
-                    console.log("408 Timeout exeption. Will wait for 1 minute. AnimeChar ", animeCharactersAPI);
-                    await sleep(60000);
+                    console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeChar ", animeCharactersAPI);
+                    await sleep(80000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else {
                     console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);

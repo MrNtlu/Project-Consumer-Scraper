@@ -14,6 +14,13 @@ pm2 stop all
 
 pm2 delete <process-name>
 
+pm2 resurrect --cron "0 0 1 * *"
+
+pm2 save
+
+pm2 kill
+
+
 //Cron
 
 crontab -e // Edit
