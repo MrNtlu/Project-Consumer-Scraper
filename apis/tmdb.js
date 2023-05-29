@@ -6,6 +6,8 @@ const tmdbAPIKey = process.env.TMDB_API_KEY;
 var page = 1;
 const movieIDList = [];
 
+//TODO Don't add animations, conflict with anime.
+
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
     const translationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/translations?api_key=${tmdbAPIKey}&language=en-US`;

@@ -149,7 +149,23 @@ async function readFile(filePath, isMovie) {
             if (parsedNdJsonList[index].popularity > 39) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
-                if (tvModel != null && tvModel.first_air_date != "") {
+                if (
+                    tvModel != null &&
+                    tvModel.first_air_date != "" &&
+                    (
+                        !tvModel.genres.some(e => e.name === "Animation") ||
+                        (
+                            tvModel.tmdb_id == "456" ||
+                            tvModel.tmdb_id == "60625" ||
+                            tvModel.tmdb_id == "1434" ||
+                            tvModel.tmdb_id == "1433" ||
+                            tvModel.tmdb_id == "94605" ||
+                            tvModel.tmdb_id == "95557" ||
+                            tvModel.tmdb_id == "105248" ||
+                            tvModel.tmdb_id == "4194"
+                        )
+                    )
+                ) {
                     tvSeriesList.push(tvModel);
                 }
             }
