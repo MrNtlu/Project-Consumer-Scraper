@@ -6,8 +6,6 @@ var page = 1;
 var upcomingPage = 1;
 const malIDList = [];
 
-//TODO: Exclude ecchi animes via APi, if not if anime has ecchi as genre don't save.
-
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 3000) {
         const sleepTimeInMillis = 3001 - (endTime - startTime);
@@ -25,7 +23,10 @@ async function startAnimeRequests() {
     for (let index = 0; index < malIDList.length; index++) {
         const animeModel = await getAnimeDetails(malIDList[index], 0);
 
-        if (animeModel != null) {
+        if (
+            animeModel != null &&
+            !animeModel.genres.some(e => e.name === "Hentai")
+        ) {
             animeList.push(animeModel);
         }
     }
