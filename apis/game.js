@@ -9,6 +9,8 @@ const rawgAPIKeyList = [
     process.env.RAWG_ALT_3_API_KEY,
     process.env.RAWG_ALT_4_API_KEY,
     process.env.RAWG_ALT_5_API_KEY,
+    process.env.RAWG_ALT_6_API_KEY,
+    process.env.RAWG_ALT_7_API_KEY,
 ];
 var rawgAPIKey = process.env.RAWG_API_KEY;
 var apiKeyPointer = 0;
@@ -117,7 +119,7 @@ async function getGameList() {
 
         if (result['detail'] != null || result['error'] != null) {
             if (result['error'] != null && result['error'].includes("The monthly API limit reached")) {
-                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
                     changeAPIKey();
                     await sleep(1000);
                     return await getGameList();
@@ -184,7 +186,7 @@ async function getUpcomingGameList() {
 
         if (result['detail'] != null || result['error'] != null) {
             if (result['error'] != null && result['error'].includes("The monthly API limit reached")) {
-                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
                     changeAPIKey();
                     await sleep(1000);
                     return await getGameList();
@@ -271,7 +273,7 @@ async function getGameDetails(rawgID) {
                 await sleep(1500);
                 return null;
             } else if (detailsResult['error'] != null && detailsResult['error'].includes("The monthly API limit reached")) {
-                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
                     changeAPIKey();
                     await sleep(1000);
                     return await getGameDetails(rawgID);
@@ -292,7 +294,7 @@ async function getGameDetails(rawgID) {
                 await sleep(1500);
                 return null;
             } else if (storesResult['error'] != null && storesResult['error'].includes("The monthly API limit reached")) {
-                if (apiKeyPointer - 1 < rawgAPIKeyList.length) {
+                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
                     changeAPIKey();
                     await sleep(1000);
                     return await getGameDetails(rawgID);
