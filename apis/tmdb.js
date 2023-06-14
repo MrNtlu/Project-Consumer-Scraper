@@ -50,6 +50,10 @@ async function getTVSeries(tvID) {
     } catch (error) {
         console.log("\nTVSeries request error occured", tvAPI, error);
         await sleep(750);
+        if (result['status_message'] == "The resource you requested could not be found." || result["status_code"] == 34) {
+            console.log("TVSeries resource not found, skipping.");
+            return null;
+        }
         return await getTVSeries(tvID);
     }
 
@@ -308,6 +312,10 @@ async function getMovies(movieID) {
     } catch (error) {
         console.log("\nMovie request error occured", movieAPI, error);
         await sleep(750);
+        if (result['status_message'] == "The resource you requested could not be found." || result["status_code"] == 34) {
+            console.log("Movie resource not found, skipping.");
+            return null;
+        }
         return await getMovies(movieID);
     }
 
