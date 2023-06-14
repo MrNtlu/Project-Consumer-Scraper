@@ -227,7 +227,7 @@ const GameModel = mongoose.model(
             },{ _id : false })
         ],
         release_date: String,
-        background_image: String,
+        image_url: String,
         subreddit: { type: String, required: false },
         age_rating: String,
         related_games: [

@@ -378,7 +378,7 @@ async function getGameDetails(rawgID) {
             metacritic_score: detailsResult['metacritic'],
             metacritic_score_by_platform: metacriticPlatformsList,
             release_date: detailsResult['released'],
-            background_image: detailsResult['background_image'],
+            image_url: detailsResult['background_image'],
             subreddit: detailsResult['reddit_url'],
             age_rating: detailsResult['esrb_rating'] != null
                 ? detailsResult['esrb_rating']['name']
