@@ -75,7 +75,7 @@ async function readFile(filePath, isMovie) {
 
         console.log("Movie fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 10) {
+            if (parsedNdJsonList[index].popularity > 18) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
                 if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
@@ -138,15 +138,19 @@ async function readFile(filePath, isMovie) {
                     }
                 }
             }
-            await MovieModel.bulkWrite(movieList);
-            console.log(`Inserted ${movieList.length} number of items to Movie DB.`);
+            try {
+                await MovieModel.bulkWrite(movieList);
+                console.log(`Inserted ${movieList.length} number of items to Movie DB.`);
+            } catch(error) {
+                console.log("Movie Insert error", error);
+            }
         }
     } else {
         console.log("TVSeries fetch started.");
 
         const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 10) {
+            if (parsedNdJsonList[index].popularity > 23) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
                 if (
@@ -212,9 +216,12 @@ async function readFile(filePath, isMovie) {
                     }
                 }
             }
-            await TVSeriesModel.bulkWrite(tvSeriesList);
-
-            console.log(`Inserted ${tvSeriesList.length} number of items to TVSeries DB.`);
+            try {
+                await TVSeriesModel.bulkWrite(tvSeriesList);
+                console.log(`Inserted ${tvSeriesList.length} number of items to TVSeries DB.`);
+            } catch(error) {
+                console.log("TV Insert error", error);
+            }
         }
     }
 }

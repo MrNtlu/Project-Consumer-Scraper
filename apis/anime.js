@@ -241,25 +241,25 @@ async function getAnimeDetails(malID, charRetryCount) {
                     await sleep(3000);
                     return await getAnimeDetails(malID, 999);
                 } else if (charResult['status'] == 403) {
-                    console.log("403 Failed to connect. Let's cool it down for 45 seconds. AnimeChar ", malID, animeCharactersAPI);
-                    await sleep(45000);
+                    console.log("403 Failed to connect. Let's cool it down for 1 minute. AnimeChar ", malID, animeCharactersAPI);
+                    await sleep(61000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else if (charResult['status'] == 408) {
                     console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeChar ", animeCharactersAPI);
                     await sleep(80000);
                     return await getAnimeDetails(malID, newRetryCount);
                 } else {
-                    console.log("Unexpected error occured. AnimeChar ", charResult, animeCharactersAPI);
-                    await sleep(12500);
+                    console.log("Unexpected error occured. Will wait for 1 minute. AnimeChar ", charResult, animeCharactersAPI);
+                    await sleep(61500);
                     return await getAnimeDetails(malID, newRetryCount);
                 }
             }
 
-            await sleep(10000);
+            await sleep(15000);
         }
     } catch (error) {
-        console.log("\nAnime details request error occured", malID, animeDetailsAPI, error);
-        await sleep(5000);
+        console.log("\nAnime details request error occured. Will wait for 1 minute ", malID, animeDetailsAPI, error);
+        await sleep(55000);
         return await getAnimeDetails(malID, charRetryCount);
     }
 
