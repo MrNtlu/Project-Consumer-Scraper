@@ -75,7 +75,7 @@ async function readFile(filePath, isMovie) {
 
         console.log("Movie fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 18) {
+            if (parsedNdJsonList[index].popularity > 21) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
                 if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {

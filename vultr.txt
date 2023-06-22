@@ -2,7 +2,7 @@ ssh username@server_ip_address
 
 // Pm2
 
-pm2 start index.js --node-args="--max-old-space-size=2048" // Run code
+pm2 start index.js --node-args="--max-old-space-size=2048" or 3072  // Run code
 
 pm2 flush <process-name>
 
@@ -11,6 +11,8 @@ pm2 status
 pm2 logs <process-name>
 
 pm2 stop all
+
+pm2 restart <process-name>
 
 pm2 delete <process-name>
 
