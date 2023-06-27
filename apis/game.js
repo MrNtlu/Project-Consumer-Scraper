@@ -72,7 +72,7 @@ async function startGameRequests() {
                             metacritic_score: element.metacritic_score,
                             metacritic_score_by_platform: element.metacritic_score_by_platform,
                             release_date: element.release_date,
-                            background_image: element.background_image,
+                            image_url: element.image_url,
                             subreddit:element.subreddit,
                             age_rating: element.age_rating,
                             related_games: element.related_games,
