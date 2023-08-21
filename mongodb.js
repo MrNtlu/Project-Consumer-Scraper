@@ -62,7 +62,6 @@ const MovieModel = mongoose.model(
         title_en: String,
         description: String,
         image_url: String,
-        small_image_url: String,
         backdrop: String,
         status: String,
         length: Number,
@@ -90,7 +89,6 @@ const TVSeriesModel = mongoose.model(
         title_en: String,
         description: String,
         image_url: String,
-        small_image_url: String,
         backdrop: String,
         status: String,
         tmdb_id: String,
@@ -109,7 +107,6 @@ const TVSeriesModel = mongoose.model(
                 air_date: String,
                 episode_count: Number,
                 name: String,
-                description: String,
                 season_num: Number,
                 image_url: String,
             },{ _id : false })
@@ -155,7 +152,6 @@ const AnimeModel = mongoose.model(
         title_jp: String,
         description: String,
         image_url: String,
-        small_image_url: String,
         mal_id: Number,
         mal_score: Number,
         mal_scored_by: Number,
@@ -228,7 +224,6 @@ const GameModel = mongoose.model(
         ],
         release_date: String,
         image_url: String,
-        subreddit: { type: String, required: false },
         age_rating: String,
         related_games: [
             mongoose.Schema({

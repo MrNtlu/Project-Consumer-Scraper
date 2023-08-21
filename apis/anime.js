@@ -48,7 +48,6 @@ async function startAnimeRequests() {
                             title_jp: element.title_jp,
                             description: element.description,
                             image_url: element.image_url,
-                            small_image_url: element.small_image_url,
                             mal_id: element.mal_id,
                             mal_score: element.mal_score,
                             mal_scored_by: element.mal_scored_by,

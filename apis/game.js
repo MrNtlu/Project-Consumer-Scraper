@@ -73,7 +73,6 @@ async function startGameRequests() {
                             metacritic_score_by_platform: element.metacritic_score_by_platform,
                             release_date: element.release_date,
                             image_url: element.image_url,
-                            subreddit:element.subreddit,
                             age_rating: element.age_rating,
                             related_games: element.related_games,
                             genres: element.genres,
@@ -381,7 +380,6 @@ async function getGameDetails(rawgID) {
             image_url: detailsResult['background_image'] != null
                 ? detailsResult['background_image']
                 : "",
-            subreddit: detailsResult['reddit_url'],
             age_rating: detailsResult['esrb_rating'] != null
                 ? detailsResult['esrb_rating']['name']
                 : null,
