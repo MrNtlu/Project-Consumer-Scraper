@@ -174,6 +174,7 @@ async function getTVSeries(tvID) {
             translation["english_name"] == "German" ||
             translation["english_name"] == "Japanese" ||
             translation["english_name"] == "Korean" ||
+            translation["english_name"] == "Dutch" ||
             translation["english_name"] == "Portuguese"
         );
         const translationsList = [];
@@ -413,6 +414,7 @@ async function getMovies(movieID) {
             translation["english_name"] == "German" ||
             translation["english_name"] == "Japanese" ||
             translation["english_name"] == "Korean" ||
+            translation["english_name"] == "Dutch" ||
             translation["english_name"] == "Portuguese"
         );
         const translationsList = [];
@@ -476,52 +478,81 @@ function parseStreamingJsonData(result) {
         const streamingList = [];
 
         Object.keys(jsonData).forEach(function(key) {
-            const data = jsonData[key];
+            if (
+                key == "AT" ||
+                key == "AU" ||
+                key == "AZ" ||
+                key == "BE" ||
+                key == "CA" ||
+                key == "CH" ||
+                key == "DE" ||
+                key == "DK" ||
+                key == "EG" ||
+                key == "ES" ||
+                key == "FR" ||
+                key == "GB" ||
+                key == "HK" ||
+                key == "IN" ||
+                key == "KR" ||
+                key == "MX" ||
+                key == "NL" ||
+                key == "NO" ||
+                key == "PH" ||
+                key == "PT" ||
+                key == "RU" ||
+                key == "SA" ||
+                key == "SE" ||
+                key == "TR" ||
+                key == "TW" ||
+                key == "US"
+            ) {
+                const data = jsonData[key];
 
-            const flatrateList = [];
-            const rentList = [];
-            const buyList = [];
+                const flatrateList = [];
+                const rentList = [];
+                const buyList = [];
 
-            try {
-                const flatrateJson = data['flatrate'];
-                for (let index = 0; index < flatrateJson.length; index++) {
-                    const item = flatrateJson[index];
-                    flatrateList.push({
-                        logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
-                        name: item['provider_name'],
+                try {
+                    const flatrateJson = data['flatrate'];
+                    for (let index = 0; index < flatrateJson.length; index++) {
+                        const item = flatrateJson[index];
+                        flatrateList.push({
+                            logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
+                            name: item['provider_name'],
+                        });
+                    }
+                } catch(_) {}
+
+                try {
+                    const rentJson = data['rent'];
+                    for (let index = 0; index < rentJson.length; index++) {
+                        const item = rentJson[index];
+                        rentList.push({
+                            logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
+                            name: item['provider_name'],
+                        });
+                    }
+                } catch(_) {}
+
+                try {
+                    const buyJson = data['buy'];
+                    for (let index = 0; index < buyJson.length; index++) {
+                        const item = buyJson[index];
+                        buyList.push({
+                            logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
+                            name: item['provider_name'],
+                        });
+                    }
+                } catch(_) {}
+
+                if (flatrateList.length > 0 || buyList.length > 0 || rentList.length > 0) {
+                    streamingList.push({
+                        country_code: key,
+                        streaming_platforms: flatrateList.length > 0 ? flatrateList : null,
+                        buy_options: buyList.length > 0 ? buyList : null,
+                        rent_options: rentList.length > 0 ? rentList : null
                     });
                 }
-            } catch(_) {}
-
-            try {
-                const rentJson = data['rent'];
-                for (let index = 0; index < rentJson.length; index++) {
-                    const item = rentJson[index];
-                    rentList.push({
-                        logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
-                        name: item['provider_name'],
-                    });
-                }
-            } catch(_) {}
-
-            try {
-                const buyJson = data['buy'];
-                for (let index = 0; index < buyJson.length; index++) {
-                    const item = buyJson[index];
-                    buyList.push({
-                        logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
-                        name: item['provider_name'],
-                    });
-                }
-            } catch(_) {}
-
-            if (flatrateList.length > 0 || buyList.length > 0 || rentList.length > 0) {
-                streamingList.push({
-                    country_code: key,
-                    streaming_platforms: flatrateList.length > 0 ? flatrateList : null,
-                    buy_options: buyList.length > 0 ? buyList : null,
-                    rent_options: rentList.length > 0 ? rentList : null
-                });
             }
         });
 
