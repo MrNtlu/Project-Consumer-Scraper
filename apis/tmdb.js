@@ -175,6 +175,7 @@ async function getTVSeries(tvID) {
             translation["english_name"] == "Japanese" ||
             translation["english_name"] == "Korean" ||
             translation["english_name"] == "Dutch" ||
+            translation["english_name"] == "Mandarin" ||
             translation["english_name"] == "Portuguese"
         );
         const translationsList = [];
@@ -415,6 +416,7 @@ async function getMovies(movieID) {
             translation["english_name"] == "Japanese" ||
             translation["english_name"] == "Korean" ||
             translation["english_name"] == "Dutch" ||
+            translation["english_name"] == "Mandarin" ||
             translation["english_name"] == "Portuguese"
         );
         const translationsList = [];
