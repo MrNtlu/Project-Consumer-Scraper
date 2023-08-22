@@ -75,7 +75,7 @@ async function readFile(filePath, isMovie) {
 
         console.log("Movie fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 21) {
+            if (parsedNdJsonList[index].popularity > 19) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
                 if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
@@ -149,7 +149,7 @@ async function readFile(filePath, isMovie) {
 
         const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 23) {
+            if (parsedNdJsonList[index].popularity > 19) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
                 if (

@@ -18,11 +18,6 @@ function disconnectFromMongoDB() {
     console.log("Disconnected from db.");
 }
 
-const genreSchema = mongoose.Schema({
-    name: String,
-    tmdb_id: Number,
-},{ _id : false });
-
 const streamingPlatformSchema = mongoose.Schema({
     logo: String,
     name: String,
@@ -72,7 +67,7 @@ const MovieModel = mongoose.model(
         tmdb_vote_count: Number,
         production_companies: [productionAndCompanySchema],
         release_date: String,
-        genres: [genreSchema],
+        genres: [String],
         streaming: [streamingSchema],
         actors: [actorSchema],
         translations: [translationSchema],
@@ -99,7 +94,7 @@ const TVSeriesModel = mongoose.model(
         total_episodes: Number,
         production_companies: [productionAndCompanySchema],
         first_air_date: String,
-        genres: [genreSchema],
+        genres: [String],
         streaming: [streamingSchema],
         networks: [productionAndCompanySchema],
         seasons: [
@@ -127,7 +122,6 @@ const animeNameURLSchema = mongoose.Schema({
 const animeGenreSchema = mongoose.Schema({
     name: String,
     url: String,
-    mal_id: Number,
 }, { _id : false })
 
 const animeRelationSchema = mongoose.Schema({
@@ -232,12 +226,7 @@ const GameModel = mongoose.model(
                 rawg_id: Number,
             },{ _id : false })
         ],
-        genres: [
-            mongoose.Schema({
-                rawg_id: String,
-                name: String,
-            },{ _id : false })
-        ],
+        genres: [String],
         tags: [String],
         platforms: [String],
         developers: [String],

@@ -330,10 +330,7 @@ async function getGameDetails(rawgID) {
         const genreList = [];
         for (let index = 0; index < genresJson.length; index++) {
             const item = genresJson[index];
-            genreList.push({
-                name: item['name'],
-                rawg_id: item['id']
-            });
+            genreList.push(item['name']);
         }
 
         const tagsJson = detailsResult['tags'];

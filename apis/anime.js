@@ -322,7 +322,6 @@ async function getAnimeDetails(malID, charRetryCount) {
                 genreList.push({
                     name: item['name'],
                     url: item['url'],
-                    mal_id: item['mal_id'],
                 });
             }
 
@@ -333,7 +332,6 @@ async function getAnimeDetails(malID, charRetryCount) {
                 themeList.push({
                     name: item['name'],
                     url: item['url'],
-                    mal_id: item['mal_id'],
                 });
             }
 
@@ -344,7 +342,6 @@ async function getAnimeDetails(malID, charRetryCount) {
                 demographicList.push({
                     name: item['name'],
                     url: item['url'],
-                    mal_id: item['mal_id'],
                 });
             }
 

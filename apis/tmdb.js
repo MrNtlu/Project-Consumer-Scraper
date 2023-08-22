@@ -133,10 +133,7 @@ async function getTVSeries(tvID) {
         const genreList = [];
         for (let index = 0; index < genresJson.length; index++) {
             const item = genresJson[index];
-            genreList.push({
-                name: item['name'],
-                tmdb_id: item['id'],
-            });
+            genreList.push(item['name']);
         }
 
         const seasonsJson = result['seasons'];
@@ -168,7 +165,17 @@ async function getTVSeries(tvID) {
             }
         }
 
-        const translationsJson = translationResult['translations'];
+        const translationsJson = translationResult['translations'].filter( translation =>
+            translation["english_name"] == "Turkish" ||
+            translation["english_name"] == "Arabic" ||
+            translation["english_name"] == "Spanish" ||
+            translation["english_name"] == "French" ||
+            translation["english_name"] == "Russian" ||
+            translation["english_name"] == "German" ||
+            translation["english_name"] == "Japanese" ||
+            translation["english_name"] == "Korean" ||
+            translation["english_name"] == "Portuguese"
+        );
         const translationsList = [];
         for (let index = 0; index < translationsJson.length; index++) {
             const item = translationsJson[index];
@@ -250,7 +257,7 @@ async function getUpcomingMovies() {
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
 
-            if (data['popularity'] > 19) {
+            if (data['popularity'] > 25) {
                 movieIDList.push(item['id']);
             }
         }
@@ -381,10 +388,7 @@ async function getMovies(movieID) {
         const genreList = [];
         for (let index = 0; index < genresJson.length; index++) {
             const item = genresJson[index];
-            genreList.push({
-                name: item['name'],
-                tmdb_id: item['id'],
-            });
+            genreList.push(item['name']);
         }
 
         const creditsJson = creditsResult['cast'];
@@ -400,7 +404,17 @@ async function getMovies(movieID) {
             }
         }
 
-        const translationsJson = translationResult['translations'];
+        const translationsJson = translationResult['translations'].filter( translation =>
+            translation["english_name"] == "Turkish" ||
+            translation["english_name"] == "Arabic" ||
+            translation["english_name"] == "Spanish" ||
+            translation["english_name"] == "French" ||
+            translation["english_name"] == "Russian" ||
+            translation["english_name"] == "German" ||
+            translation["english_name"] == "Japanese" ||
+            translation["english_name"] == "Korean" ||
+            translation["english_name"] == "Portuguese"
+        );
         const translationsList = [];
         for (let index = 0; index < translationsJson.length; index++) {
             const item = translationsJson[index];
