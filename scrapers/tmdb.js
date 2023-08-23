@@ -72,6 +72,7 @@ async function readFile(filePath, isMovie) {
 
     if (isMovie) {
         const movieList = [];
+        const upcomingMovieIDList = [];
 
         console.log("Movie fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
@@ -85,6 +86,8 @@ async function readFile(filePath, isMovie) {
         }
         console.log("Movie fetch Ended.");
 
+        await insertMovies(movieList, false);
+
         console.log("Upcoming Movie Fetch Started");
         const upcomingMovieList = await GetUpcomingMovies();
 
@@ -95,61 +98,19 @@ async function readFile(filePath, isMovie) {
                 const movieModel = await GetMovies(upcomingMovieList[index]);
 
                 if (movieModel != null) {
-                    movieList.push(movieModel);
+                    upcomingMovieIDList.push(movieModel);
                 }
             }
         }
         console.log("Upcoming Movie Fetch Ended");
 
-        if (movieList.length > 0) {
-            console.log(`Inserting ${movieList.length} number of items to Movie DB.`);
-
-            for (let index = 0; index < movieList.length; index++) {
-                const element = movieList[index];
-
-                movieList[index] = {
-                    'updateOne': {
-                        'filter': {'tmdb_id': element.tmdb_id},
-                        'update': {
-                            "$set": {
-                                title_original: element.title_original,
-                                title_en: element.title_en,
-                                description: element.description,
-                                backdrop: element.backdrop,
-                                image_url: element.image_url,
-                                status: element.status,
-                                length: element.length,
-                                imdb_id: element.imdb_id,
-                                tmdb_id: element.tmdb_id,
-                                tmdb_popularity: element.tmdb_popularity,
-                                tmdb_vote: element.tmdb_vote,
-                                tmdb_vote_count: element.tmdb_vote_count,
-                                production_companies: element.production_companies,
-                                release_date: element.release_date,
-                                genres: element.genres,
-                                streaming: element.streaming,
-                                actors: element.actors,
-                                translations: element.translations,
-                                created_at: new Date(),
-                            }
-                        },
-                        'upsert': true,
-                    }
-                }
-            }
-            try {
-                await MovieModel.bulkWrite(movieList);
-                console.log(`Inserted ${movieList.length} number of items to Movie DB.`);
-            } catch(error) {
-                console.log("Movie Insert error", error);
-            }
-        }
+        await insertMovies(upcomingMovieIDList, true);
     } else {
         console.log("TVSeries fetch started.");
 
         const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 20) {
+            if (parsedNdJsonList[index].popularity > 21) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
                 if (
@@ -176,52 +137,100 @@ async function readFile(filePath, isMovie) {
         }
         console.log("TVSeries fetch ended.");
 
-        if (tvSeriesList.length > 0) {
-            console.log(`Inserting ${tvSeriesList.length} number of items to TVSeries DB.`);
+        await insertTVSeries(tvSeriesList);
+    }
+}
 
-            for (let index = 0; index < tvSeriesList.length; index++) {
-                const element = tvSeriesList[index];
+async function insertMovies(movieList, isUpcoming) {
+    console.log(`Inserting ${isUpcoming ? "upcoming" : ""} ${movieList.length} number of items to Movie DB.`);
 
-                tvSeriesList[index] = {
-                    'updateOne': {
-                        'filter': {'tmdb_id': element.tmdb_id},
-                        'update': {
-                            "$set": {
-                                title_original: element.title_original,
-                                title_en: element.title_en,
-                                description: element.description,
-                                image_url: element.image_url,
-                                backdrop: element.backdrop,
-                                status: element.status,
-                                tmdb_id: element.tmdb_id,
-                                tmdb_popularity: element.tmdb_popularity,
-                                tmdb_vote: element.tmdb_vote,
-                                tmdb_vote_count: element.tmdb_vote_count,
-                                total_seasons: element.total_seasons,
-                                total_episodes: element.total_episodes,
-                                production_companies: element.production_companies,
-                                first_air_date: element.first_air_date,
-                                genres: element.genres,
-                                streaming: element.streaming,
-                                networks: element.networks,
-                                seasons: element.seasons,
-                                actors: element.actors,
-                                translations: element.translations,
-                                created_at: new Date(),
-                            }
-                        },
-                        'upsert': true,
+    for (let index = 0; index < movieList.length; index++) {
+        const element = movieList[index];
+
+        movieList[index] = {
+            'updateOne': {
+                'filter': {'tmdb_id': element.tmdb_id},
+                'update': {
+                    "$set": {
+                        title_original: element.title_original,
+                        title_en: element.title_en,
+                        description: element.description,
+                        backdrop: element.backdrop,
+                        image_url: element.image_url,
+                        status: isUpcoming ? "Upcoming" : element.status,
+                        length: element.length,
+                        imdb_id: element.imdb_id,
+                        tmdb_id: element.tmdb_id,
+                        tmdb_popularity: element.tmdb_popularity,
+                        tmdb_vote: element.tmdb_vote,
+                        tmdb_vote_count: element.tmdb_vote_count,
+                        production_companies: element.production_companies,
+                        release_date: element.release_date,
+                        genres: element.genres,
+                        streaming: element.streaming,
+                        actors: element.actors,
+                        translations: element.translations,
+                        created_at: new Date(),
                     }
-                }
-            }
-            try {
-                await TVSeriesModel.bulkWrite(tvSeriesList);
-                console.log(`Inserted ${tvSeriesList.length} number of items to TVSeries DB.`);
-            } catch(error) {
-                console.log("TV Insert error", error);
+                },
+                'upsert': true,
             }
         }
+    }
+    try {
+        await MovieModel.bulkWrite(movieList);
+        console.log(`Inserted ${isUpcoming ? "upcoming" : ""} ${movieList.length} number of items to Movie DB.`);
+    } catch(error) {
+        console.log("Movie Insert error", error);
+    }
+}
+
+async function insertTVSeries(tvSeriesList) {
+    console.log(`Inserting ${tvSeriesList.length} number of items to TVSeries DB.`);
+
+    for (let index = 0; index < tvSeriesList.length; index++) {
+        const element = tvSeriesList[index];
+
+        tvSeriesList[index] = {
+            'updateOne': {
+                'filter': {'tmdb_id': element.tmdb_id},
+                'update': {
+                    "$set": {
+                        title_original: element.title_original,
+                        title_en: element.title_en,
+                        description: element.description,
+                        image_url: element.image_url,
+                        backdrop: element.backdrop,
+                        status: element.status,
+                        tmdb_id: element.tmdb_id,
+                        tmdb_popularity: element.tmdb_popularity,
+                        tmdb_vote: element.tmdb_vote,
+                        tmdb_vote_count: element.tmdb_vote_count,
+                        total_seasons: element.total_seasons,
+                        total_episodes: element.total_episodes,
+                        production_companies: element.production_companies,
+                        first_air_date: element.first_air_date,
+                        genres: element.genres,
+                        streaming: element.streaming,
+                        networks: element.networks,
+                        seasons: element.seasons,
+                        actors: element.actors,
+                        translations: element.translations,
+                        created_at: new Date(),
+                    }
+                },
+                'upsert': true,
+            }
+        }
+    }
+    try {
+        await TVSeriesModel.bulkWrite(tvSeriesList);
+        console.log(`Inserted ${tvSeriesList.length} number of items to TVSeries DB.`);
+    } catch(error) {
+        console.log("TV Insert error", error);
     }
 }
 
 module.exports.StartMovieFileDownload = startMovieFileDownload;
+module.exports.InsertMovies = insertMovies;
+module.exports.InsertTVSeries = insertTVSeries;
