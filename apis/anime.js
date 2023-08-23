@@ -287,12 +287,14 @@ async function getAnimeDetails(malID, charRetryCount) {
         if (jsonData != undefined || jsonData != null) {
             const streamingJson = jsonData['streaming'];
             const streamingList = [];
-            for (let index = 0; index < streamingJson.length; index++) {
-                const item = streamingJson[index];
-                streamingList.push({
-                    name: item['name'],
-                    url: item['url'],
-                });
+            if (streamingJson != null && streamingJson != undefined) {
+                for (let index = 0; index < streamingJson.length; index++) {
+                    const item = streamingJson[index];
+                    streamingList.push({
+                        name: item['name'],
+                        url: item['url'],
+                    });
+                }
             }
 
             const producerJson = jsonData['producers'];
