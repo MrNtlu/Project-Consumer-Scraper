@@ -1,3 +1,4 @@
+const { SatisfyRateLimiting, InsertGame } = require("../apis/game");
 const { rawgBaseURL, sleep } = require("../constants");
 const { GameModel } = require("../mongodb");
 require('dotenv').config()
@@ -15,9 +16,14 @@ const rawgAPIKeyList = [
 var rawgAPIKey = process.env.RAWG_API_KEY;
 var apiKeyPointer = 0;
 
+const date = new Date()
+const today = new Date(date.setDate(date.getDate() - 1));
+const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
+const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
+const year = today.getUTCFullYear();
+
 const gameIDList = [];
 var relatedGamesList = [];
-var page = 1;
 var upcomingPage = 1;
 var relatedPage = 1;
 
@@ -27,15 +33,34 @@ function changeAPIKey() {
     console.log("API Key changed.", apiKeyPointer);
 }
 
-async function satisfyRateLimiting(endTime, startTime) {
-    if (endTime - startTime < 750) {
-        const sleepTimeInMillis = 751 - (endTime - startTime);
-        await sleep(sleepTimeInMillis);
+async function getUpcomingGamesFromDB() {
+    console.log("Upcoming Games DB Started");
+
+    try {
+        const games = await GameModel.find({
+            $or: [
+            {
+                tba: true,
+            },
+            {
+                release_date: {
+                    $gt: `${year}-${month}-${day}`,
+                },
+            },
+            ],
+        }).select('rawg_id');
+
+        const gameList = games.map(game => game.rawg_id);
+
+        console.log("Upcoming Games DB Ended");
+
+        await InsertGame(gameList);
+    } catch (error) {
+        console.log("Get upcoming game from db error", error);
     }
 }
 
-async function startGameRequests() {
-    await getGameList();
+async function fetchUpcomingGames() {
     await getUpcomingGameList();
     console.log(`${gameIDList.length} number of game details will be fetched.`);
 
@@ -49,71 +74,11 @@ async function startGameRequests() {
             gameList.push(gameModel);
         }
     }
-
     console.log(`${gameList.length} number of game details fetched.`);
 
-    await insertGame(gameList);
+    await InsertGame(gameList);
 
     console.log("Games are DONE!");
-}
-
-async function getGameList() {
-    const startTime = performance.now();
-
-    const gameAPI = `${rawgBaseURL}games?page=${page}&key=${rawgAPIKey}&metacritic=1,100&parent_platforms=1,2,3,6,7&page_size=50`;
-
-    let request = new Request(
-        gameAPI, {
-            method: 'GET',
-        }
-    )
-
-    let result;
-    try {
-        result = await fetch(request).then((response) => {
-            return response.json();
-        });
-
-        if (result['detail'] != null || result['error'] != null) {
-            if (result['error'] != null && result['error'].includes("The monthly API limit reached")) {
-                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
-                    changeAPIKey();
-                    await sleep(1000);
-                    return await getGameList();
-                } else {
-                    console.log("Out of API Keys.");
-                    return null;
-                }
-            } else {
-                throw Error(result['detail'])
-            }
-        }
-    } catch (error) {
-        console.log("\nGame request error occured", page, error);
-        await sleep(1500);
-        await getGameList();
-        return;
-    }
-
-    const endTime = performance.now();
-    await satisfyRateLimiting(endTime, startTime);
-
-    try {
-        const results = result['results'];
-        for (let index = 0; index < results.length; index++) {
-            const item = results[index];
-            gameIDList.push(item['id']);
-        }
-
-        const shouldIterate = result['next'];
-        if (shouldIterate != null) {
-            page += 1;
-            await getGameList();
-        }
-    } catch (error) {
-        console.log("Game error occured", error);
-        return;
-    }
 }
 
 async function getUpcomingGameList() {
@@ -163,7 +128,7 @@ async function getUpcomingGameList() {
     }
 
     const endTime = performance.now();
-    await satisfyRateLimiting(endTime, startTime);
+    await SatisfyRateLimiting(endTime, startTime);
 
     try {
         const results = result['results'];
@@ -213,7 +178,7 @@ async function getGameDetails(rawgID) {
         });
 
         const endTime = performance.now();
-        await satisfyRateLimiting(endTime, startTime);
+        await SatisfyRateLimiting(endTime, startTime);
 
         const storesStartTime = performance.now();
 
@@ -222,7 +187,7 @@ async function getGameDetails(rawgID) {
         });
 
         const storesEndTime = performance.now();
-        await satisfyRateLimiting(storesEndTime, storesStartTime);
+        await SatisfyRateLimiting(storesEndTime, storesStartTime);
 
         if (detailsResult['detail'] != null || detailsResult['error'] != null) {
             if (detailsResult['detail'] != null && detailsResult['detail'].includes("Not found")) {
@@ -433,53 +398,5 @@ function parseStoreJsonData(result) {
     }
 }
 
-async function insertGame(gameList) {
-    console.log(`Inserting ${gameList.length} number of items to Game DB`);
-
-    for (let index = 0; index < gameList.length; index++) {
-        const element = gameList[index];
-
-        gameList[index] = {
-            'updateOne': {
-                'filter': {'rawg_id': element.rawg_id},
-                'update': {
-                    "$set": {
-                        title: element.title,
-                        title_original: element.title_original,
-                        description: element.description,
-                        tba: element.tba,
-                        rawg_id: element.rawg_id,
-                        rawg_rating: element.rawg_rating,
-                        rawg_rating_count: element.rawg_rating_count,
-                        metacritic_score: element.metacritic_score,
-                        metacritic_score_by_platform: element.metacritic_score_by_platform,
-                        release_date: element.release_date,
-                        image_url: element.image_url,
-                        age_rating: element.age_rating,
-                        related_games: element.related_games,
-                        genres: element.genres,
-                        tags: element.tags,
-                        platforms: element.platforms,
-                        developers: element.developers,
-                        publishers: element.publishers,
-                        stores: element.stores,
-                        created_at: new Date(),
-                    }
-                },
-                'upsert': true,
-            }
-        }
-    }
-
-    try {
-        await GameModel.bulkWrite(gameList);
-        console.log(`Inserted ${gameList.length} number of items to Game DB`);
-    } catch (error) {
-        console.log(`Error occured while inserting games ${error}`);
-    }
-}
-
-module.exports.StartGameRequests = startGameRequests;
-module.exports.GetGameDetails = getGameDetails;
-module.exports.SatisfyRateLimiting = satisfyRateLimiting;
-module.exports.InsertGame = insertGame;
+module.exports.FetchUpcomingGames = fetchUpcomingGames;
+module.exports.GetUpcomingGamesFromDB = getUpcomingGamesFromDB;

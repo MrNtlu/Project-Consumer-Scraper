@@ -40,7 +40,7 @@ async function getUpcomingMoviesFromDB() {
 
         await InsertMovies(movieIDList, false);
     } catch (error) {
-        console.log("Get error", error);
+        console.log("Get upcoming movie from db error", error);
     }
 }
 
