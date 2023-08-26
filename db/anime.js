@@ -7,7 +7,7 @@ var upcomingPage = 1;
 const malIDList = [];
 
 const date = new Date()
-const today = new Date(date.setDate(date.getDate() - 1));
+const today = new Date(date.setDate(date.getDate() - 7));
 const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
 const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();
@@ -30,9 +30,21 @@ async function getUpcomingAnimeFromDB() {
             ],
         }).select('mal_id');
 
-        const animeList = animes.map(anime => anime.mal_id);
+        const animeIDList = animes.map(anime => anime.mal_id);
+        console.log(`Upcoming Anime DB Ended. ${animeIDList.length} number of anime details will be fetched.`);
 
-        console.log("Upcoming Anime DB Ended");
+        const animeList = [];
+        for (let index = 0; index < animeIDList.length; index++) {
+            const animeModel = await GetAnimeDetails(animeIDList[index], 0);
+
+            if (
+                animeModel != null &&
+                !animeModel.genres.some(e => e.name === "Hentai")
+            ) {
+                animeList.push(animeModel);
+            }
+        }
+        console.log(`${animeList.length} number of anime details fetched.`);
 
         await InsertAnime(animeList);
     } catch (error) {

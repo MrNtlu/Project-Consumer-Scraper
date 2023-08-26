@@ -10,7 +10,7 @@ const tvSeriesDownloadURL = `tv_series_ids_${month}_${day}_${year}${tmdbFileExte
 const downloadFolder = "downloads"
 
 const date = new Date()
-const today = new Date(date.setDate(date.getDate() - 1));
+const today = new Date(date.setDate(date.getDate() - 7));
 const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
 const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();

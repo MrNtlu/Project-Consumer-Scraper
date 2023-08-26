@@ -17,7 +17,7 @@ var rawgAPIKey = process.env.RAWG_API_KEY;
 var apiKeyPointer = 0;
 
 const date = new Date()
-const today = new Date(date.setDate(date.getDate() - 1));
+const today = new Date(date.setDate(date.getDate() - 7));
 const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
 const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();
@@ -50,9 +50,20 @@ async function getUpcomingGamesFromDB() {
             ],
         }).select('rawg_id');
 
-        const gameList = games.map(game => game.rawg_id);
+        const gameIDList = games.map(game => game.rawg_id);
+        console.log(`Upcoming Games DB Ended. ${gameIDList.length} number of game details will be fetched.`);
 
-        console.log("Upcoming Games DB Ended");
+        const gameList = [];
+        for (let index = 0; index < gameIDList.length; index++) {
+            relatedPage = 1;
+            relatedGamesList = [];
+            const gameModel = await getGameDetails(gameIDList[index]);
+
+            if (gameModel != null) {
+                gameList.push(gameModel);
+            }
+        }
+        console.log(`${gameList.length} number of game details fetched.`);
 
         await InsertGame(gameList);
     } catch (error) {

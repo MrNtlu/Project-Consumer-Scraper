@@ -1,44 +1,66 @@
-const { GetUpcomingMovies } = require("../apis/tmdb");
+const { GetUpcomingMovies, GetMovies } = require("../apis/tmdb");
 const { MovieModel } = require("../mongodb");
 const { InsertMovies } = require("../scrapers/tmdb");
 
+const date = new Date()
+const today = new Date(date.setDate(date.getDate() - 7));
+const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
+const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
+const year = today.getUTCFullYear();
+
 async function fetchUpcomingMovies() {
-    const upcomingMovieIDList = [];
+    const upcomingMovieList = [];
 
     console.log("Upcoming Movie Fetch Started");
-    const upcomingMovieList = await GetUpcomingMovies();
 
-    for (let index = 0; index < upcomingMovieList.length; index++) {
-        const element = upcomingMovieList[index];
+    const upcomingMovieIDList = await GetUpcomingMovies();
 
-        if (movieList.find(movie => movie.id == element.toString()) == undefined) {
-            const movieModel = await GetMovies(upcomingMovieList[index]);
+    for (let index = 0; index < upcomingMovieIDList.length; index++) {
+        const movieModel = await GetMovies(upcomingMovieIDList[index]);
 
-            if (movieModel != null) {
-                upcomingMovieIDList.push(movieModel);
-            }
+        if (movieModel != null) {
+            upcomingMovieList.push(movieModel);
         }
     }
     console.log("Upcoming Movie Fetch Ended");
 
-    await InsertMovies(upcomingMovieIDList, true);
+    await InsertMovies(upcomingMovieList, true);
 }
 
 async function getUpcomingMoviesFromDB() {
+    const upcomingMovieList = [];
+
     console.log("Upcoming Movie DB Started");
 
     try {
         const movies = await MovieModel.find({
-            status: {
-                $ne: "Released",
-            },
+            $or: [
+                {
+                    status: {
+                        $ne: "Released",
+                    },
+                },
+                {
+                    release_date: {
+                        $gt: `${year}-${month}-${day}`,
+                    },
+                },
+            ],
         }).select('tmdb_id');
 
         const movieIDList = movies.map(movie => movie.tmdb_id);
+        console.log(`Upcoming Movie DB Ended. ${movieIDList.length} number of movie details will be fetched.`);
 
-        console.log("Upcoming Movie DB Ended");
+        for (let index = 0; index < movieIDList.length; index++) {
+            const movieModel = await GetMovies(movieIDList[index]);
 
-        await InsertMovies(movieIDList, false);
+            if (movieModel != null) {
+                upcomingMovieList.push(movieModel);
+            }
+        }
+        console.log("Upcoming Movie Fetch Ended");
+
+        await InsertMovies(upcomingMovieList, false);
     } catch (error) {
         console.log("Get upcoming movie from db error", error);
     }
