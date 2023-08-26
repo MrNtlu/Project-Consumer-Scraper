@@ -225,14 +225,14 @@ async function getGameDetails(rawgID) {
                     return null;
                 }
             } else {
-                console.log("Unexpected game store details error occured.", storesRequest, storesResult);
+                console.log("Unexpected game store details error occured.", storesAPI, storesResult);
                 await sleep(2000);
                 return await getGameDetails(rawgID);
             }
         }
     } catch (error) {
-        console.log("\nGame details request error occured", rawgID, gameDetailsRequest, error);
-        await sleep(2500);
+        console.log("\nGame details request error occured", rawgID, gameDetailsAPI, error);
+        await sleep(5000);
         return await getGameDetails(rawgID);
     }
 
@@ -336,14 +336,29 @@ async function getRelatedGames(rawgID) {
         });
 
         if (result['detail'] != null || result['error'] != null) {
-            console.log("\nRelated Game inner request error occured", rawgID, request, result);
-            await sleep(1500);
-            await getRelatedGames(rawgID);
-            return;
+            if (result['detail'] != null && result['detail'].includes("Not found")) {
+                console.log("404 Game not found", rawgID);
+                await sleep(1500);
+                return;
+            } else if (result['error'] != null && result['error'].includes("The monthly API limit reached")) {
+                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
+                    changeAPIKey();
+                    await sleep(1000);
+                    return await getRelatedGames(rawgID);
+                } else {
+                    console.log("Out of API Keys.");
+                    return null;
+                }
+            } else {
+                console.log("\nRelated Game inner request error occured", rawgID, relatedGamesAPI, result);
+                await sleep(1500);
+                await getRelatedGames(rawgID);
+                return;
+            }
         }
     } catch (error) {
-        console.log("\nRelated Game request error occured", rawgID, request, error);
-        await sleep(2500);
+        console.log("\nRelated Game request error occured", rawgID, relatedGamesAPI, error);
+        await sleep(4000);
         await getRelatedGames(rawgID);
         return;
     }
