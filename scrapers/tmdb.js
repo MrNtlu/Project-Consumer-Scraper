@@ -147,6 +147,17 @@ async function insertMovies(movieList, isUpcoming) {
     for (let index = 0; index < movieList.length; index++) {
         const element = movieList[index];
 
+        var status = element.status;
+        if (element.release_date != undefined && element.release_date != "") {
+            const releaseDate = new Date(element.release_date);
+
+            if (releaseDate > today) {
+                status = "Upcoming"
+            } else {
+                status = "Released"
+            }
+        }
+
         movieList[index] = {
             'updateOne': {
                 'filter': {'tmdb_id': element.tmdb_id},
@@ -157,7 +168,7 @@ async function insertMovies(movieList, isUpcoming) {
                         description: element.description,
                         backdrop: element.backdrop,
                         image_url: element.image_url,
-                        status: isUpcoming ? "Upcoming" : element.status,
+                        status: isUpcoming ? "Upcoming" : status,
                         length: element.length,
                         imdb_id: element.imdb_id,
                         tmdb_id: element.tmdb_id,
