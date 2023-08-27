@@ -1,4 +1,4 @@
-const { tmdbBaseMovieAPIURL, tmdbBaseImageURL, tmdbBaseTVSeriesAPIURL, sleep } = require("../constants");
+const { tmdbBaseMovieAPIURL, tmdbBaseImageURL, tmdbBaseTVSeriesAPIURL, sleep, tmdbBaseDiscoverAPIURL } = require("../constants");
 const { MovieModel, TVSeriesModel } = require("../mongodb");
 require('dotenv').config()
 
@@ -236,7 +236,7 @@ async function getTVSeries(tvID) {
 
 async function getUpcomingMovies() {
     const apiDate = `${year}-${month}-${day}`
-    const upcomingMovieAPI = `${tmdbBaseMovieAPIURL}discover/movie?page=${page}&api_key=${tmdbAPIKey}&language=en-US&primary_release_date.gte=${apiDate}&sort_by=popularity.desc`;
+    const upcomingMovieAPI = `${tmdbBaseDiscoverAPIURL}movie?page=${page}&api_key=${tmdbAPIKey}&language=en-US&primary_release_date.gte=${apiDate}&sort_by=popularity.desc`;
 
     let request = new Request(
         upcomingMovieAPI, {
