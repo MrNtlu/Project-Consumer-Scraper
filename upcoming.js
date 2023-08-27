@@ -9,16 +9,16 @@ async function main() {
     try{
         await ConnectToMongoDB();
 
-        await GetUpcomingMoviesFromDB();
         await FetchUpcomingMovies();
-
-        await StartTVFileDownload();
+        await GetUpcomingMoviesFromDB();
 
         await GetUpcomingAnimeFromDB();
         await FetchUpcomingAnime();
 
         await GetUpcomingGamesFromDB();
         await FetchUpcomingGames();
+
+        await StartTVFileDownload();
 
         DisconnectFromMongoDB();
     } catch(err) {

@@ -6,7 +6,11 @@ const tmdbAPIKey = process.env.TMDB_API_KEY;
 var page = 1;
 const movieIDList = [];
 
-//TODO Don't add animations, conflict with anime.
+const date = new Date()
+const today = new Date(date.setDate(date.getDate() + 1));
+const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) : today.getUTCMonth() + 1;
+const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
+const year = today.getUTCFullYear();
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
@@ -231,7 +235,8 @@ async function getTVSeries(tvID) {
 }
 
 async function getUpcomingMovies() {
-    const upcomingMovieAPI = `${tmdbBaseMovieAPIURL}upcoming?page=${page}&api_key=${tmdbAPIKey}&language=en-US`;
+    const apiDate = `${year}-${month}-${day}`
+    const upcomingMovieAPI = `${tmdbBaseMovieAPIURL}discover/movie?page=${page}&api_key=${tmdbAPIKey}&language=en-US&primary_release_date.gte=${apiDate}&sort_by=popularity.desc`;
 
     let request = new Request(
         upcomingMovieAPI, {
@@ -259,7 +264,7 @@ async function getUpcomingMovies() {
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
 
-            if (item['popularity'] > 25) {
+            if (item['popularity'] > 4) {
                 movieIDList.push(item['id']);
             }
         }

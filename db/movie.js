@@ -18,7 +18,9 @@ async function fetchUpcomingMovies() {
     for (let index = 0; index < upcomingMovieIDList.length; index++) {
         const movieModel = await GetMovies(upcomingMovieIDList[index]);
 
-        if (movieModel != null) {
+        if (
+            movieModel != null
+        ) {
             upcomingMovieList.push(movieModel);
         }
     }

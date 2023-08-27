@@ -1,5 +1,13 @@
 ssh username@server_ip_address
 
+pm2 start upcoming.js --name myapp --node-args="--max-old-space-size=3072"
+
+pm2 set myapp restart none
+
+crontab -e
+
+0 0 * * 0 pm2 restart myapp //weekly
+
 // Pm2
 
 pm2 start index.js --node-args="--max-old-space-size=2048" or 3072  // Run code
