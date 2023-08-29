@@ -9,8 +9,8 @@ async function main() {
     try{
         await ConnectToMongoDB();
 
-        await FetchUpcomingMovies();
         await GetUpcomingMoviesFromDB();
+        await FetchUpcomingMovies();
 
         await GetUpcomingAnimeFromDB();
         await FetchUpcomingAnime();
