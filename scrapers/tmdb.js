@@ -45,21 +45,24 @@ async function startMovieFileDownload() {
         }
     }
 
-    pathList.forEach(async path => {
-        extractFile(path);
-    });
+    await extractFile(pathList[0]);
+    await extractFile(pathList[1]);
 
     await sleep(3000);
 
     await Promise.all([
         readFile(pathList[0].replace(".gz", ''), false),
+        sleep(2000),
         readFile(pathList[1].replace(".gz", ''), true)
     ])
 }
 
-function extractFile(filePath) {
-    gunzip(filePath, filePath.replace(".gz", ''), async function () {
-        console.log("Extracted successfully.", filePath);
+async function extractFile(filePath) {
+    return new Promise((resolve, _) => {
+        gunzip(filePath, filePath.replace(".gz", ''), async function () {
+            console.log("Extracted successfully.", filePath);
+            resolve();
+        })
     })
 }
 
@@ -110,7 +113,7 @@ async function readFile(filePath, isMovie) {
 
         const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 21) {
+            if (parsedNdJsonList[index].popularity > 25) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
                 if (

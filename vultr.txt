@@ -2,6 +2,14 @@ ssh username@server_ip_address
 
 pm2 start upcoming.js --name myapp --node-args="--max-old-space-size=3072" --no-autorestart
 
+pm2 start upcoming.js --name upcoming --node-args="--max-old-space-size=3072" --no-autorestart --cron-restart="0 3 * * 1"
+
+0 3 * * 1 //Monday at 3 AM
+
+pm2 start index.js --name main --node-args="--max-old-space-size=3072" --no-autorestart --cron-restart="0 1 2 * *"
+
+0 1 2 * * //Every month on 2nd day at 1 AM
+
 pm2 set myapp restart none
 
 crontab -e

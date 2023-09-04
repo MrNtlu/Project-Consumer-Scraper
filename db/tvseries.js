@@ -63,7 +63,7 @@ async function readFile(filePath) {
 
     const tvSeriesList = [];
     for (let index = 0; index < parsedNdJsonList.length; index++) {
-        if (parsedNdJsonList[index].popularity > 21) {
+        if (parsedNdJsonList[index].popularity > 25) {
             const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
             if (

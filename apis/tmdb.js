@@ -54,7 +54,7 @@ async function getTVSeries(tvID) {
     } catch (error) {
         console.log("\nTVSeries request error occured", tvAPI, error);
         await sleep(750);
-        if (result['status_message'] == "The resource you requested could not be found." || result["status_code"] == 34) {
+        if (result != undefined && (result['status_message'] == "The resource you requested could not be found." || result["status_code"] == 34)) {
             console.log("TVSeries resource not found, skipping.");
             return null;
         }
@@ -264,7 +264,7 @@ async function getUpcomingMovies() {
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
 
-            if (item['popularity'] > 4) {
+            if (item['popularity'] > 15) {
                 movieIDList.push(item['id']);
             }
         }
