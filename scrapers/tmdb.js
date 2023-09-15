@@ -118,22 +118,10 @@ async function readFile(filePath, isMovie) {
 
                 if (
                     tvModel != null &&
-                    !(tvModel.networks.some(e => e.origin_country === "JP") && tvModel.genres.some(e => e.name === "Animation")) &&
+                    !(tvModel.genres.some(e => e.name === "News")) &&
+                    !(tvModel.production_companies.some(e => e.origin_country === "JP") && tvModel.genres.some(e => e.name === "Animation")) &&
                     !tvModel.networks.some(e => e.origin_country === "IN") &&
-                    tvModel.first_air_date != "" &&
-                    (
-                        !tvModel.genres.some(e => e.name === "Animation") ||
-                        (
-                            tvModel.tmdb_id == "456" ||
-                            tvModel.tmdb_id == "60625" ||
-                            tvModel.tmdb_id == "1434" ||
-                            tvModel.tmdb_id == "1433" ||
-                            tvModel.tmdb_id == "94605" ||
-                            tvModel.tmdb_id == "95557" ||
-                            tvModel.tmdb_id == "105248" ||
-                            tvModel.tmdb_id == "4194"
-                        )
-                    )
+                    tvModel.first_air_date != ""
                 ) {
                     tvSeriesList.push(tvModel);
                 }
