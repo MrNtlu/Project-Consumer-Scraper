@@ -21,7 +21,7 @@ async function startAnimeRequests() {
 
     const animeList = [];
     for (let index = 0; index < malIDList.length; index++) {
-        const animeModel = await getAnimeDetails(malIDList[index], 0);
+        const animeModel = await getAnimeDetails(malIDList[index], 0, 0);
 
         if (
             animeModel != null &&
@@ -134,11 +134,12 @@ async function getUpcomingAnimeList() {
     }
 }
 
-async function getAnimeDetails(malID, charRetryCount) {
+async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) {
     const baseAnimeDetailsAPI = jikanBaseURL + "anime/" + malID;
 
     const animeDetailsAPI = `${baseAnimeDetailsAPI}/full`;
     const animeCharactersAPI = `${baseAnimeDetailsAPI}/characters`;
+    const animeRecommendationAPI = `${baseAnimeDetailsAPI}/recommendations`;
 
     let request = new Request(
         animeDetailsAPI, {
@@ -152,8 +153,15 @@ async function getAnimeDetails(malID, charRetryCount) {
         }
     );
 
+    let recommendationRequest = new Request(
+        animeRecommendationAPI, {
+            method: 'GET',
+        }
+    );
+
     let result;
     let charResult;
+    let recommendationResult;
     try {
         result = await fetch(request).then((response) => {
             return response.json();
@@ -208,12 +216,46 @@ async function getAnimeDetails(malID, charRetryCount) {
                 }
             }
 
-            await sleep(15000);
+            await sleep(45000);
+        }
+
+        if (recommendationRetryCount <= 25) {
+            recommendationResult = await fetch(recommendationRequest).then((response) => {
+                return response.json();
+            });
+
+            if (recommendationResult['status'] != null) {
+                const newRetryCount = recommendationRetryCount + 1;
+
+                if (recommendationResult['status'] == 404) {
+                    console.log("Anime Recommendation 404 Not Found. Canceling the recommendation request.", malID, animeRecommendationAPI);
+                    await sleep(5000);
+                    return await getAnimeDetails(malID, 0, 999);
+                } else if (recommendationResult['status'] == 403) {
+                    console.log("403 Failed to connect. Let's cool it down for 1 minute. AnimeRecommend ", malID, animeRecommendationAPI);
+                    await sleep(61000);
+                    return await getAnimeDetails(malID, 0, newRetryCount);
+                } else if (recommendationResult['status'] == 408) {
+                    console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeRecommend ", animeRecommendationAPI);
+                    await sleep(80000);
+                    return await getAnimeDetails(malID, 0, newRetryCount);
+                } else if (recommendationResult['status'] == 429) {
+                    console.log("429 RateLimit exeption. Will wait for 3 minutes. AnimeRecommend ", animeRecommendationAPI);
+                    await sleep(180000);
+                    return await getAnimeDetails(malID, 0, newRetryCount);
+                } else {
+                    console.log("Unexpected error occured. Will wait for 2 minute. AnimeRecommend ", recommendationResult, animeRecommendationAPI);
+                    await sleep(120000);
+                    return await getAnimeDetails(malID, 0, newRetryCount);
+                }
+            }
+
+            await sleep(45000);
         }
     } catch (error) {
         console.log("\nAnime details request error occured. Will wait for 1 minute ", malID, animeDetailsAPI, error);
         await sleep(61000);
-        return await getAnimeDetails(malID, charRetryCount);
+        return await getAnimeDetails(malID, charRetryCount, recommendationRetryCount);
     }
 
     try {
@@ -234,6 +276,30 @@ async function getAnimeDetails(malID, charRetryCount) {
                         image: characterJson['images']['jpg']['image_url'],
                         role: item['role']
                     });
+                }
+            }
+        }
+
+        const recommendationList = [];
+        if (recommendationResult != undefined && recommendationResult['data'] != undefined) {
+            const recommendationJsonData = recommendationResult['data'];
+
+            if (recommendationJsonData != undefined && recommendationJsonData != null) {
+                for (let index = 0; index < recommendationJsonData.length; index++) {
+                    const item = recommendationJsonData[index];
+                    const recommendationJson = item['entry'];
+
+                    if (
+                        recommendationJson['mal_id'] != null && recommendationJson['mal_id'] != "" &&
+                        recommendationJson['title'] != null && recommendationJson['title'] != "" &&
+                        recommendationList.length < 10
+                    ) {
+                        recommendationList.push({
+                            mal_id: recommendationJson['mal_id'],
+                            title: recommendationJson['title'],
+                            image_url: recommendationJson['images']['jpg']['image_url'],
+                        });
+                    }
                 }
             }
         }
@@ -354,6 +420,7 @@ async function getAnimeDetails(malID, charRetryCount) {
                     to_year: jsonData['aired']['prop']['to']['year'],
                 },
                 age_rating: jsonData['rating'],
+                recommendations: recommendationList,
                 producers: producerList,
                 studios: studioList,
                 genres: genreList,

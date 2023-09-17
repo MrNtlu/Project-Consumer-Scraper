@@ -17,6 +17,7 @@ async function getTVSeries(tvID) {
     const translationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const creditsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
+    const recommendationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`
 
     let request = new Request(
         tvAPI, {
@@ -38,6 +39,12 @@ async function getTVSeries(tvID) {
 
     let creditsRequest = new Request(
         creditsTVAPI, {
+            method: 'GET',
+        }
+    );
+
+    let recommendationsRequest = new Request(
+        recommendationsTVAPI, {
             method: 'GET',
         }
     );
@@ -106,6 +113,21 @@ async function getTVSeries(tvID) {
         return await getTVSeries(tvID);
     }
 
+    let recommendationsResult;
+    try {
+        recommendationsResult = await fetch(recommendationsRequest).then((response) => {
+            return response.json();
+        });
+
+        if (recommendationsResult['success'] != null) {
+            throw Error(recommendationsResult["status_message"] != null ? recommendationsResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nTV recommendations request error occured", recommendationsTVAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvID);
+    }
+
     try {
         const productionCompaniesJson = result['production_companies'];
         const productionCompaniesList = [];
@@ -163,7 +185,7 @@ async function getTVSeries(tvID) {
             if (item['known_for_department'] == "Acting") {
                 creditsList.push({
                     name: item['name'],
-                    image: `${tmdbBaseImageURL}original/${item['profile_path']}`,
+                    image: `${tmdbBaseImageURL}original${item['profile_path']}`,
                     character: item['character'],
                 });
             }
@@ -178,7 +200,6 @@ async function getTVSeries(tvID) {
             translation["english_name"] == "German" ||
             translation["english_name"] == "Japanese" ||
             translation["english_name"] == "Korean" ||
-            translation["english_name"] == "Dutch" ||
             translation["english_name"] == "Mandarin" ||
             translation["english_name"] == "Portuguese"
         );
@@ -219,6 +240,7 @@ async function getTVSeries(tvID) {
             production_companies: productionCompaniesList,
             first_air_date: result['first_air_date'],
             genres: genreList,
+            recommendations: parseTVRecommendationJsonData(recommendationsResult),
             streaming: parseStreamingJsonData(streamingResult),
             networks: networkList,
             seasons: seasonList,
@@ -288,6 +310,7 @@ async function getMovies(movieID) {
     const translationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const creditsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
+    const recommendationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`
 
     let request = new Request(
         movieAPI, {
@@ -309,6 +332,12 @@ async function getMovies(movieID) {
 
     let creditsRequest = new Request(
         creditsMovieAPI, {
+            method: 'GET',
+        }
+    );
+
+    let recommendationsRequest = new Request(
+        recommendationsMovieAPI, {
             method: 'GET',
         }
     );
@@ -377,6 +406,21 @@ async function getMovies(movieID) {
         return await getMovies(movieID);
     }
 
+    let recommendationsResult;
+    try {
+        recommendationsResult = await fetch(recommendationsRequest).then((response) => {
+            return response.json();
+        });
+
+        if (recommendationsResult['success'] != null) {
+            throw Error(recommendationsResult["status_message"] != null ? recommendationsResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nMovie recommendations request error occured", recommendationsMovieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
+
     try {
         const productionCompaniesJson = result['production_companies'];
         const productionCompaniesList = [];
@@ -405,7 +449,7 @@ async function getMovies(movieID) {
             if (item['known_for_department'] == "Acting") {
                 creditsList.push({
                     name: item['name'],
-                    image: `${tmdbBaseImageURL}original/${item['profile_path']}`,
+                    image: `${tmdbBaseImageURL}original${item['profile_path']}`,
                     character: item['character'],
                 });
             }
@@ -420,7 +464,6 @@ async function getMovies(movieID) {
             translation["english_name"] == "German" ||
             translation["english_name"] == "Japanese" ||
             translation["english_name"] == "Korean" ||
-            translation["english_name"] == "Dutch" ||
             translation["english_name"] == "Mandarin" ||
             translation["english_name"] == "Portuguese"
         );
@@ -466,6 +509,7 @@ async function getMovies(movieID) {
             production_companies: productionCompaniesList,
             release_date: result['release_date'],
             genres: genreList,
+            recommendations: parseMovieRecommendationJsonData(recommendationsResult),
             streaming: parseStreamingJsonData(streamingResult),
             actors: creditsList,
             translations: translationsList,
@@ -475,6 +519,98 @@ async function getMovies(movieID) {
         return tempMovieModel;
     } catch (error) {
         console.log("Movie error occured", movieID, error);
+        return null;
+    }
+}
+
+function parseMovieRecommendationJsonData(result) {
+    try {
+        const jsonData = result['results'];
+        const recommendationList = [];
+
+        for (let index = 0; index < jsonData.length; index++) {
+            const item = jsonData[index];
+
+            const id = item['id'];
+            const title = item['title'];
+            const titleOriginal = item['original_title'];
+            const poster = item['poster_path'];
+            const description = item['overview'];
+            const releaseDate = item['release_date'];
+
+            if (
+                id != null && id != "" &&
+                title != null && title != "" &&
+                titleOriginal != null && titleOriginal != "" &&
+                poster != null && poster != "" &&
+                releaseDate != null && releaseDate != ""
+            ) {
+                recommendationList.push({
+                    tmdb_id: id,
+                    title_en: title,
+                    title_original: titleOriginal,
+                    image_url: `${tmdbBaseImageURL}original/${poster}`,
+                    description: description,
+                    release_date: releaseDate,
+                });
+            }
+        }
+
+        return recommendationList;
+    } catch (error) {
+        console.log("Movie recommendation parse error occured", error);
+        return null;
+    }
+}
+
+function parseTVRecommendationJsonData(result) {
+    try {
+        const jsonData = result['results'];
+        const recommendationList = [];
+
+        for (let index = 0; index < jsonData.length; index++) {
+            const item = jsonData[index];
+
+            const id = item['id'];
+            const title = item['name'];
+            const titleOriginal = item['original_name'];
+            const poster = item['poster_path'];
+            const description = item['overview'];
+            const releaseDate = item['first_air_date'];
+
+            const originCountryList = item['origin_country'];
+            const genreIDList = item['genre_ids'];
+
+            if (
+                genreIDList != null && genreIDList.length > 0 &&
+                originCountryList != null && originCountryList.length > 0 &&
+                !(
+                    genreIDList.some(id => id === 10763) ||
+                    (
+                        genreIDList.some(id => id === 16) &&
+                        originCountryList.some(country => country === "JP")
+                    )
+                ) &&
+                id != null && id != "" &&
+                title != null && title != "" &&
+                titleOriginal != null && titleOriginal != "" &&
+                poster != null && poster != "" &&
+                releaseDate != null && releaseDate != ""
+            ) {
+                recommendationList.push({
+                    tmdb_id: id,
+                    title_en: title,
+                    title_original: titleOriginal,
+                    image_url: `${tmdbBaseImageURL}original/${poster}`,
+                    description: description,
+                    release_date: releaseDate,
+                });
+            }
+        }
+
+        return recommendationList;
+    } catch (error) {
+        console.log("TV recommendation parse error occured", error);
         return null;
     }
 }

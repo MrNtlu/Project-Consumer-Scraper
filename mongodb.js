@@ -48,7 +48,16 @@ const translationSchema = mongoose.Schema({
     lan_name_en: String,
     title: String,
     description: String,
-},{ _id : false })
+},{ _id : false });
+
+const recommendationSchema = mongoose.Schema({
+    tmdb_id: String,
+    title_en: String,
+    title_original: String,
+    image_url: String,
+    description: String,
+    release_date: String,
+},{ _id : false });
 
 const MovieModel = mongoose.model(
     "movies",
@@ -68,6 +77,7 @@ const MovieModel = mongoose.model(
         production_companies: [productionAndCompanySchema],
         release_date: String,
         genres: [String],
+        recommendations: [recommendationSchema],
         streaming: [streamingSchema],
         actors: [actorSchema],
         translations: [translationSchema],
@@ -95,6 +105,7 @@ const TVSeriesModel = mongoose.model(
         production_companies: [productionAndCompanySchema],
         first_air_date: String,
         genres: [String],
+        recommendations: [recommendationSchema],
         streaming: [streamingSchema],
         networks: [productionAndCompanySchema],
         seasons: [
@@ -136,6 +147,12 @@ const animeCharacterSchema = mongoose.Schema({
     name: String,
     image: String,
     role: String,
+}, { _id: false })
+
+const animeRecommendationSchema = mongoose.Schema({
+    mal_id: Number,
+    title: String,
+    image_url: String,
 }, { _id: false })
 
 const AnimeModel = mongoose.model(
@@ -181,6 +198,7 @@ const AnimeModel = mongoose.model(
             to_year: Number,
         }),
         age_rating: String,
+        recommendations: [animeRecommendationSchema],
         producers: [animeNameURLSchema],
         studios: [animeNameURLSchema],
         genres: [animeGenreSchema],
