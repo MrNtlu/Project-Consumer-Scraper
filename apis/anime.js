@@ -197,22 +197,29 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
             if (charResult['status'] != null) {
                 const newRetryCount = charRetryCount + 1;
 
+                let recommendCount;
+                if (recommendationRetryCount > 25) {
+                    recommendCount = 999;
+                } else {
+                    recommendCount = 0;
+                }
+
                 if (charResult['status'] == 404) {
                     console.log("Anime Character 404 Not Found. Canceling the character request.", malID, animeCharactersAPI);
                     await sleep(5000);
-                    return await getAnimeDetails(malID, 999);
+                    return await getAnimeDetails(malID, 999, recommendCount);
                 } else if (charResult['status'] == 403) {
                     console.log("403 Failed to connect. Let's cool it down for 1 minute. AnimeChar ", malID, animeCharactersAPI);
                     await sleep(61000);
-                    return await getAnimeDetails(malID, newRetryCount);
+                    return await getAnimeDetails(malID, newRetryCount, recommendCount);
                 } else if (charResult['status'] == 408) {
                     console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeChar ", animeCharactersAPI);
                     await sleep(80000);
-                    return await getAnimeDetails(malID, newRetryCount);
+                    return await getAnimeDetails(malID, newRetryCount, recommendCount);
                 } else {
                     console.log("Unexpected error occured. Will wait for 1 minute. AnimeChar ", charResult, animeCharactersAPI);
                     await sleep(61500);
-                    return await getAnimeDetails(malID, newRetryCount);
+                    return await getAnimeDetails(malID, newRetryCount, recommendCount);
                 }
             }
 
@@ -227,34 +234,41 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
             if (recommendationResult['status'] != null) {
                 const newRetryCount = recommendationRetryCount + 1;
 
+                let charCount;
+                if (charRetryCount > 25) {
+                    charCount = 999;
+                } else {
+                    charCount = 0;
+                }
+
                 if (recommendationResult['status'] == 404) {
                     console.log("Anime Recommendation 404 Not Found. Canceling the recommendation request.", malID, animeRecommendationAPI);
                     await sleep(5000);
-                    return await getAnimeDetails(malID, 0, 999);
+                    return await getAnimeDetails(malID, charCount, 999);
                 } else if (recommendationResult['status'] == 403) {
                     console.log("403 Failed to connect. Let's cool it down for 1 minute. AnimeRecommend ", malID, animeRecommendationAPI);
                     await sleep(61000);
-                    return await getAnimeDetails(malID, 0, newRetryCount);
+                    return await getAnimeDetails(malID, charCount, newRetryCount);
                 } else if (recommendationResult['status'] == 408) {
                     console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeRecommend ", animeRecommendationAPI);
                     await sleep(80000);
-                    return await getAnimeDetails(malID, 0, newRetryCount);
+                    return await getAnimeDetails(malID, charCount, newRetryCount);
                 } else if (recommendationResult['status'] == 429) {
                     console.log("429 RateLimit exeption. Will wait for 3 minutes. AnimeRecommend ", animeRecommendationAPI);
                     await sleep(180000);
-                    return await getAnimeDetails(malID, 0, newRetryCount);
+                    return await getAnimeDetails(malID, charCount, newRetryCount);
                 } else {
                     console.log("Unexpected error occured. Will wait for 2 minute. AnimeRecommend ", recommendationResult, animeRecommendationAPI);
                     await sleep(120000);
-                    return await getAnimeDetails(malID, 0, newRetryCount);
+                    return await getAnimeDetails(malID, charCount, newRetryCount);
                 }
             }
 
             await sleep(45000);
         }
     } catch (error) {
-        console.log("\nAnime details request error occured. Will wait for 1 minute ", malID, animeDetailsAPI, error);
-        await sleep(61000);
+        console.log("\nAnime details request error occured. Will wait for 1 minute 30 seconds", malID, animeDetailsAPI, error);
+        await sleep(90000);
         return await getAnimeDetails(malID, charRetryCount, recommendationRetryCount);
     }
 
@@ -473,6 +487,7 @@ async function insertAnime(animeList) {
                         streaming: element.streaming,
                         aired: element.aired,
                         age_rating: element.age_rating,
+                        recommendations: element.recommendations,
                         producers: element.producers,
                         studios: element.studios,
                         genres: element.genres,
