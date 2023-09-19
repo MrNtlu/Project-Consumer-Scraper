@@ -286,7 +286,7 @@ async function getUpcomingMovies() {
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
 
-            if (item['popularity'] > 15) {
+            if (item['popularity'] > 25) {
                 movieIDList.push(item['id']);
             }
         }

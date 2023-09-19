@@ -68,8 +68,8 @@ async function readFile(filePath) {
 
             if (
                 tvModel != null &&
-                !(tvModel.genres.some(e => e.name === "News")) &&
-                !(tvModel.production_companies.some(e => e.origin_country === "JP") && tvModel.genres.some(e => e.name === "Animation")) &&
+                !(tvModel.genres.some(e => e === "News")) &&
+                !(tvModel.production_companies.some(e => e.origin_country === "JP") && tvModel.genres.some(e => e === "Animation")) &&
                 !tvModel.networks.some(e => e.origin_country === "IN") &&
                 tvModel.first_air_date != ""
             ) {
