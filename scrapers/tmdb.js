@@ -66,6 +66,9 @@ async function extractFile(filePath) {
     })
 }
 
+const movieThreshold = 20;
+const tvThreshold = 25;
+
 async function readFile(filePath, isMovie) {
     console.log("Reading file", filePath);
 
@@ -79,7 +82,7 @@ async function readFile(filePath, isMovie) {
 
         console.log("Movie fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 20) {
+            if (parsedNdJsonList[index].popularity > movieThreshold) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
                 if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
@@ -113,7 +116,7 @@ async function readFile(filePath, isMovie) {
 
         const tvSeriesList = [];
         for (let index = 0; index < parsedNdJsonList.length; index++) {
-            if (parsedNdJsonList[index].popularity > 25) {
+            if (parsedNdJsonList[index].popularity > tvThreshold) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
                 if (
@@ -170,6 +173,8 @@ async function insertMovies(movieList, isUpcoming) {
                         production_companies: element.production_companies,
                         release_date: element.release_date,
                         genres: element.genres,
+                        images: element.images,
+                        videos: element.videos,
                         recommendations: element.recommendations,
                         streaming: element.streaming,
                         actors: element.actors,
@@ -215,6 +220,8 @@ async function insertTVSeries(tvSeriesList) {
                         production_companies: element.production_companies,
                         first_air_date: element.first_air_date,
                         genres: element.genres,
+                        images: element.images,
+                        videos: element.videos,
                         recommendations: element.recommendations,
                         streaming: element.streaming,
                         networks: element.networks,

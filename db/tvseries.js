@@ -15,6 +15,8 @@ const year = today.getUTCFullYear();
 const tvSeriesDownloadURL = `tv_series_ids_${month}_${day}_${year}${tmdbFileExtension}`;
 const downloadFolder = "downloads"
 
+const popularityThreshold = 25;
+
 async function startTVFileDownload() {
     if (fs.existsSync(downloadFolder)) {
         fs.rmSync(downloadFolder, { recursive: true });
@@ -63,7 +65,7 @@ async function readFile(filePath) {
 
     const tvSeriesList = [];
     for (let index = 0; index < parsedNdJsonList.length; index++) {
-        if (parsedNdJsonList[index].popularity > 25) {
+        if (parsedNdJsonList[index].popularity > popularityThreshold) {
             const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
 
             if (

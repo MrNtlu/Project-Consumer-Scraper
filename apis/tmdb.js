@@ -12,12 +12,16 @@ const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) :
 const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();
 
+const upcomingPopularityThreshold = 25;
+
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
     const translationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const creditsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
     const recommendationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`
+    const imagesTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/images?api_key=${tmdbAPIKey}&include_image_language=en,null`
+    const trailersTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/videos?api_key=${tmdbAPIKey}&language=en-US`
 
     let request = new Request(
         tvAPI, {
@@ -49,6 +53,18 @@ async function getTVSeries(tvID) {
         }
     );
 
+    let imagesRequest = new Request(
+        imagesTVAPI, {
+            method: 'GET',
+        }
+    );
+
+    let trailersRequest = new Request(
+        trailersTVAPI, {
+            method: 'GET',
+        }
+    );
+
     let result;
     try {
         result = await fetch(request).then((response) => {
@@ -68,6 +84,8 @@ async function getTVSeries(tvID) {
         return await getTVSeries(tvID);
     }
 
+    await sleep(750);
+
     let streamingResult;
     try {
         streamingResult = await fetch(streamingRequest).then((response) => {
@@ -82,6 +100,8 @@ async function getTVSeries(tvID) {
         await sleep(750);
         return await getTVSeries(tvID);
     }
+
+    await sleep(750);
 
     let translationResult;
     try {
@@ -98,6 +118,8 @@ async function getTVSeries(tvID) {
         return await getTVSeries(tvID);
     }
 
+    await sleep(750);
+
     let creditsResult;
     try {
         creditsResult = await fetch(creditsRequest).then((response) => {
@@ -113,6 +135,8 @@ async function getTVSeries(tvID) {
         return await getTVSeries(tvID);
     }
 
+    await sleep(750);
+
     let recommendationsResult;
     try {
         recommendationsResult = await fetch(recommendationsRequest).then((response) => {
@@ -124,6 +148,40 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\nTV recommendations request error occured", recommendationsTVAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvID);
+    }
+
+    await sleep(750);
+
+    let imagesResult;
+    try {
+        imagesResult = await fetch(imagesRequest).then((response) => {
+            return response.json();
+        });
+
+        if (imagesResult['success'] != null) {
+            throw Error(imagesResult["status_message"] != null ? imagesResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\TV images request error occured", imagesTVAPI, error);
+        await sleep(750);
+        return await getTVSeries(tvID);
+    }
+
+    await sleep(750);
+
+    let trailersResult;
+    try {
+        trailersResult = await fetch(trailersRequest).then((response) => {
+            return response.json();
+        });
+
+        if (trailersResult['success'] != null) {
+            throw Error(trailersResult["status_message"] != null ? trailersResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\TV trailer request error occured", trailersTVAPI, error);
         await sleep(750);
         return await getTVSeries(tvID);
     }
@@ -184,6 +242,7 @@ async function getTVSeries(tvID) {
             const item = creditsJson[index];
             if (item['known_for_department'] == "Acting") {
                 creditsList.push({
+                    tmdb_id: item['id'],
                     name: item['name'],
                     image: `${tmdbBaseImageURL}original${item['profile_path']}`,
                     character: item['character'],
@@ -240,6 +299,8 @@ async function getTVSeries(tvID) {
             production_companies: productionCompaniesList,
             first_air_date: result['first_air_date'],
             genres: genreList,
+            images: parseImageJsonData(imagesResult),
+            videos: parseVideoJsonData(trailersResult),
             recommendations: parseTVRecommendationJsonData(recommendationsResult),
             streaming: parseStreamingJsonData(streamingResult),
             networks: networkList,
@@ -286,7 +347,7 @@ async function getUpcomingMovies() {
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
 
-            if (item['popularity'] > 25) {
+            if (item['popularity'] > upcomingPopularityThreshold) {
                 movieIDList.push(item['id']);
             }
         }
@@ -310,7 +371,9 @@ async function getMovies(movieID) {
     const translationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const creditsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
-    const recommendationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`
+    const recommendationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`;
+    const imagesMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/images?api_key=${tmdbAPIKey}&include_image_language=en,null`;
+    const trailersMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/videos?api_key=${tmdbAPIKey}&language=en-US`;
 
     let request = new Request(
         movieAPI, {
@@ -342,6 +405,18 @@ async function getMovies(movieID) {
         }
     );
 
+    let imagesRequest = new Request(
+        imagesMovieAPI, {
+            method: 'GET',
+        }
+    );
+
+    let trailersRequest = new Request(
+        trailersMovieAPI, {
+            method: 'GET',
+        }
+    );
+
     let result;
     try {
         result = await fetch(request).then((response) => {
@@ -361,6 +436,8 @@ async function getMovies(movieID) {
         return await getMovies(movieID);
     }
 
+    await sleep(750);
+
     let streamingResult;
     try {
         streamingResult = await fetch(streamingRequest).then((response) => {
@@ -375,6 +452,8 @@ async function getMovies(movieID) {
         await sleep(750);
         return await getMovies(movieID);
     }
+
+    await sleep(750);
 
     let translationResult;
     try {
@@ -391,6 +470,8 @@ async function getMovies(movieID) {
         return await getMovies(movieID);
     }
 
+    await sleep(750);
+
     let creditsResult;
     try {
         creditsResult = await fetch(creditsRequest).then((response) => {
@@ -406,6 +487,8 @@ async function getMovies(movieID) {
         return await getMovies(movieID);
     }
 
+    await sleep(750);
+
     let recommendationsResult;
     try {
         recommendationsResult = await fetch(recommendationsRequest).then((response) => {
@@ -417,6 +500,40 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie recommendations request error occured", recommendationsMovieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
+
+    await sleep(750);
+
+    let imagesResult;
+    try {
+        imagesResult = await fetch(imagesRequest).then((response) => {
+            return response.json();
+        });
+
+        if (imagesResult['success'] != null) {
+            throw Error(imagesResult["status_message"] != null ? imagesResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nMovie images request error occured", imagesMovieAPI, error);
+        await sleep(750);
+        return await getMovies(movieID);
+    }
+
+    await sleep(750);
+
+    let trailersResult;
+    try {
+        trailersResult = await fetch(trailersRequest).then((response) => {
+            return response.json();
+        });
+
+        if (trailersResult['success'] != null) {
+            throw Error(trailersResult["status_message"] != null ? trailersResult["status_message"] : "Unknown error.")
+        }
+    } catch (error) {
+        console.log("\nMovie trailer request error occured", trailersMovieAPI, error);
         await sleep(750);
         return await getMovies(movieID);
     }
@@ -448,6 +565,7 @@ async function getMovies(movieID) {
             const item = creditsJson[index];
             if (item['known_for_department'] == "Acting") {
                 creditsList.push({
+                    tmdb_id: item['id'],
                     name: item['name'],
                     image: `${tmdbBaseImageURL}original${item['profile_path']}`,
                     character: item['character'],
@@ -509,6 +627,8 @@ async function getMovies(movieID) {
             production_companies: productionCompaniesList,
             release_date: result['release_date'],
             genres: genreList,
+            images: parseImageJsonData(imagesResult),
+            videos: parseVideoJsonData(trailersResult),
             recommendations: parseMovieRecommendationJsonData(recommendationsResult),
             streaming: parseStreamingJsonData(streamingResult),
             actors: creditsList,
@@ -559,7 +679,7 @@ function parseMovieRecommendationJsonData(result) {
         return recommendationList;
     } catch (error) {
         console.log("Movie recommendation parse error occured", error);
-        return null;
+        return [];
     }
 }
 
@@ -611,7 +731,64 @@ function parseTVRecommendationJsonData(result) {
         return recommendationList;
     } catch (error) {
         console.log("TV recommendation parse error occured", error);
-        return null;
+        return [];
+    }
+}
+
+function parseImageJsonData(result) {
+    try {
+        const jsonData = result['backdrops'];
+        const imageList = [];
+
+        for (let index = 0; index < jsonData.length; index++) {
+            const item = jsonData[index];
+
+            const image = item['file_path'];
+            if (image != null && image != "" && imageList.length < 10) {
+                imageList.push(`${tmdbBaseImageURL}original/${image}`);
+            }
+        }
+
+        return imageList;
+    } catch (error) {
+        console.log("Image parse error occured", error);
+        return [];
+    }
+}
+
+function parseVideoJsonData(result) {
+    try {
+        const jsonData = result['results'];
+        const videoList = [];
+
+        for (let index = 0; index < jsonData.length; index++) {
+            const item = array[index];
+
+            const site = item['site'];
+            const key = item['key'];
+            const type = item['type'];
+            const official = ['official'];
+            const name = ['name'];
+
+            if (
+                site != null && (site == "YouTube" || site == "Youtube") &&
+                key != null && key != "" &&
+                official != null && official == true &&
+                name != null && name != "" &&
+                type != null && type != "" && (type == "Trailer" || type == "Teaser")
+            ) {
+                videoList.push({
+                    name: name,
+                    key: key,
+                    type: type,
+                });
+            }
+        }
+
+        return videoList;
+    } catch (error) {
+        console.log("Image parse error occured", error);
+        return [];
     }
 }
 

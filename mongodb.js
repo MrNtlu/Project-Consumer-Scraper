@@ -40,6 +40,7 @@ const actorSchema = mongoose.Schema({
     name: String,
     image: String,
     character: String,
+    tmdb_id: String,
 },{ _id : false });
 
 const translationSchema = mongoose.Schema({
@@ -59,6 +60,12 @@ const recommendationSchema = mongoose.Schema({
     release_date: String,
 },{ _id : false });
 
+const videoSchema = mongoose.Schema({
+    name: String,
+    key: String,
+    type: String
+},{ _id : false })
+
 const MovieModel = mongoose.model(
     "movies",
     mongoose.Schema({
@@ -77,6 +84,8 @@ const MovieModel = mongoose.model(
         production_companies: [productionAndCompanySchema],
         release_date: String,
         genres: [String],
+        images: [String],
+        videos: [videoSchema],
         recommendations: [recommendationSchema],
         streaming: [streamingSchema],
         actors: [actorSchema],
@@ -105,6 +114,8 @@ const TVSeriesModel = mongoose.model(
         production_companies: [productionAndCompanySchema],
         first_air_date: String,
         genres: [String],
+        images: [String],
+        videos: [videoSchema],
         recommendations: [recommendationSchema],
         streaming: [streamingSchema],
         networks: [productionAndCompanySchema],
@@ -245,6 +256,7 @@ const GameModel = mongoose.model(
             },{ _id : false })
         ],
         genres: [String],
+        screenshots: [String],
         tags: [String],
         platforms: [String],
         developers: [String],

@@ -190,6 +190,7 @@ async function getGameDetails(rawgID) {
 
     const gameDetailsAPI = `${baseDetailsAPI}?key=${rawgAPIKey}`
     const storesAPI = `${baseDetailsAPI}/stores?key=${rawgAPIKey}`
+    const screenshotsAPI = `${baseDetailsAPI}/screenshots?key=${rawgAPIKey}`
 
     let gameDetailsRequest = new Request(
         gameDetailsAPI, {
@@ -203,8 +204,15 @@ async function getGameDetails(rawgID) {
         }
     );
 
+    let screenshotsRequest = new Request(
+        screenshotsAPI, {
+            method: 'GET',
+        }
+    );
+
     let detailsResult;
     let storesResult;
+    let screenshotsResult;
     try {
         const startTime = performance.now();
 
@@ -223,6 +231,15 @@ async function getGameDetails(rawgID) {
 
         const storesEndTime = performance.now();
         await satisfyRateLimiting(storesEndTime, storesStartTime);
+
+        const screenshotsStartTime = performance.now();
+
+        screenshotsResult = await fetch(screenshotsRequest).then((response) => {
+            return response.json();
+        });
+
+        const screenshotsEndTime = performance.now();
+        await satisfyRateLimiting(screenshotsEndTime, screenshotsStartTime);
 
         if (detailsResult['detail'] != null || detailsResult['error'] != null) {
             if (detailsResult['detail'] != null && detailsResult['detail'].includes("Not found")) {
@@ -261,6 +278,27 @@ async function getGameDetails(rawgID) {
                 }
             } else {
                 console.log("Unexpected game store details error occured.", storesAPI, storesResult);
+                await sleep(2000);
+                return await getGameDetails(rawgID);
+            }
+        }
+
+        if (screenshotsResult['detail'] != null || screenshotsResult['error'] != null) {
+            if (screenshotsResult['detail'] != null && screenshotsResult['detail'].includes("Not found")) {
+                console.log("404 Game not found", rawgID);
+                await sleep(1500);
+                return null;
+            } else if (screenshotsResult['error'] != null && screenshotsResult['error'].includes("The monthly API limit reached")) {
+                if (apiKeyPointer + 1 < rawgAPIKeyList.length) {
+                    changeAPIKey();
+                    await sleep(1000);
+                    return await getGameDetails(rawgID);
+                } else {
+                    console.log("Out of API Keys.");
+                    return null;
+                }
+            } else {
+                console.log("Unexpected game screenshot details error occured.", screenshotsAPI, screenshotsResult);
                 await sleep(2000);
                 return await getGameDetails(rawgID);
             }
@@ -344,6 +382,7 @@ async function getGameDetails(rawgID) {
             platforms: platformList,
             developers: developerList,
             publishers: publisherList,
+            screenshots: parseScreenshotJsonData(screenshotsResult),
             stores: parseStoreJsonData(storesResult),
             created_at: new Date(),
         });
@@ -428,6 +467,32 @@ async function getRelatedGames(rawgID) {
     }
 }
 
+function parseScreenshotJsonData(result) {
+    const screenshotList = [];
+
+    try {
+        const screenshotJson = result['results'];
+        for (let index = 0; index < screenshotJson.length; index++) {
+            const item = screenshotJson[index];
+
+            const image = item['image'];
+            const isDeleted = item['is_deleted'];
+
+            if (
+                image != null && image != "" &&
+                isDeleted != null && isDeleted == false
+            ) {
+                storeList.push(image);
+            }
+        }
+
+        return screenshotList.length > 0 ? screenshotList : null;
+    } catch (error) {
+        console.log("Screenshot parse error occured", error);
+        return null;
+    }
+}
+
 function parseStoreJsonData(result) {
     const storeList = [];
 
@@ -477,6 +542,7 @@ async function insertGame(gameList) {
                         platforms: element.platforms,
                         developers: element.developers,
                         publishers: element.publishers,
+                        screenshots: element.screenshots,
                         stores: element.stores,
                         created_at: new Date(),
                     }

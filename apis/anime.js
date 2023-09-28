@@ -187,7 +187,7 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
             }
         }
 
-        await sleep(30000);
+        await sleep(45000);
 
         if (charRetryCount <= 25) {
             charResult = await fetch(charRequest).then((response) => {
@@ -223,7 +223,7 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
                 }
             }
 
-            await sleep(45000);
+            await sleep(61000);
         }
 
         if (recommendationRetryCount <= 25) {
