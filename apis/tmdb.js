@@ -762,7 +762,7 @@ function parseVideoJsonData(result) {
         const videoList = [];
 
         for (let index = 0; index < jsonData.length; index++) {
-            const item = array[index];
+            const item = jsonData[index];
 
             const site = item['site'];
             const key = item['key'];
@@ -787,7 +787,7 @@ function parseVideoJsonData(result) {
 
         return videoList;
     } catch (error) {
-        console.log("Image parse error occured", error);
+        console.log("Video parse error occured", error);
         return [];
     }
 }

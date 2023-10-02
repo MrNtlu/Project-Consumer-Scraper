@@ -88,9 +88,17 @@ async function readFile(filePath, isMovie) {
                 if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
                     movieList.push(movieModel);
                 }
+
+                if (movieList.length > 2000) {
+                    console.log(`Inserting ${movieList.length} movies`);
+                    await insertMovies(movieList, false);
+                    console.log(`Inserted ${movieList.length} movies`);
+
+                    movieList = [];
+                }
             }
         }
-        console.log("Movie fetch Ended.");
+        console.log(`Movie fetch Ended. Inserting remaining movies ${movieList.length}`);
 
         await insertMovies(movieList, false);
 
@@ -128,9 +136,17 @@ async function readFile(filePath, isMovie) {
                 ) {
                     tvSeriesList.push(tvModel);
                 }
+
+                if (tvSeriesList.length > 2000) {
+                    console.log(`Inserting ${tvSeriesList.length} tv series`);
+                    await insertTVSeries(tvSeriesList);
+                    console.log(`Inserted ${tvSeriesList.length} tv series`);
+
+                    tvSeriesList = [];
+                }
             }
         }
-        console.log("TVSeries fetch ended.");
+        console.log(`TVSeries fetch ended. Inserting remaining tv series ${tvSeriesList.length}`);
 
         await insertTVSeries(tvSeriesList);
     }
