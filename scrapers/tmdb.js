@@ -77,7 +77,7 @@ async function readFile(filePath, isMovie) {
     console.log(`Total ${isMovie ? "movie" : "tv series"} items: `, parsedNdJsonList.length);
 
     if (isMovie) {
-        const movieList = [];
+        var movieList = [];
         const upcomingMovieIDList = [];
 
         console.log("Movie fetch started.");
@@ -120,9 +120,9 @@ async function readFile(filePath, isMovie) {
 
         await insertMovies(upcomingMovieIDList, true);
     } else {
-        console.log("TVSeries fetch started.");
+        var tvSeriesList = [];
 
-        const tvSeriesList = [];
+        console.log("TVSeries fetch started.");
         for (let index = 0; index < parsedNdJsonList.length; index++) {
             if (parsedNdJsonList[index].popularity > tvThreshold) {
                 const tvModel = await GetTVSeries(parsedNdJsonList[index].id);
