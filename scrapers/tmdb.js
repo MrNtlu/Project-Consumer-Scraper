@@ -66,8 +66,8 @@ async function extractFile(filePath) {
     })
 }
 
-const movieThreshold = 20;
-const tvThreshold = 25;
+const movieThreshold = 17;
+const tvThreshold = 23;
 
 async function readFile(filePath, isMovie) {
     console.log("Reading file", filePath);
@@ -89,10 +89,8 @@ async function readFile(filePath, isMovie) {
                     movieList.push(movieModel);
                 }
 
-                if (movieList.length > 2000) {
-                    console.log(`Inserting ${movieList.length} movies`);
+                if (movieList.length >= 7000) {
                     await insertMovies(movieList, false);
-                    console.log(`Inserted ${movieList.length} movies`);
 
                     movieList = [];
                 }
@@ -137,10 +135,8 @@ async function readFile(filePath, isMovie) {
                     tvSeriesList.push(tvModel);
                 }
 
-                if (tvSeriesList.length > 2000) {
-                    console.log(`Inserting ${tvSeriesList.length} tv series`);
+                if (tvSeriesList.length >= 7000) {
                     await insertTVSeries(tvSeriesList);
-                    console.log(`Inserted ${tvSeriesList.length} tv series`);
 
                     tvSeriesList = [];
                 }
