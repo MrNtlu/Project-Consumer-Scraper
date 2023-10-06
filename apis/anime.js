@@ -267,8 +267,8 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
             await sleep(45000);
         }
     } catch (error) {
-        console.log("\nAnime details request error occured. Will wait for 1 minute 30 seconds", malID, animeDetailsAPI, error);
-        await sleep(90000);
+        console.log("\nAnime details request error occured. Will wait for 2 minutes", malID, animeDetailsAPI, error);
+        await sleep(120000);
         return await getAnimeDetails(malID, charRetryCount, recommendationRetryCount);
     }
 

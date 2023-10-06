@@ -97,7 +97,13 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\nTVSeries streaming request error occured", streamingTVAPI, error);
-        await sleep(750);
+
+        if (streamingResult["status_code"] != null && streamingResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getTVSeries(tvID);
     }
 
@@ -114,7 +120,13 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\nTVSeries translation request error occured", translationsTVAPI, error);
-        await sleep(750);
+
+        if (translationResult["status_code"] != null && translationResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getTVSeries(tvID);
     }
 
@@ -131,7 +143,13 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\nTVSeries credits request error occured", creditsTVAPI, error);
-        await sleep(750);
+
+        if (creditsResult["status_code"] != null && creditsResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getTVSeries(tvID);
     }
 
@@ -148,7 +166,13 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\nTV recommendations request error occured", recommendationsTVAPI, error);
-        await sleep(750);
+
+        if (recommendationsResult["status_code"] != null && recommendationsResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getTVSeries(tvID);
     }
 
@@ -165,7 +189,13 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\TV images request error occured", imagesTVAPI, error);
-        await sleep(750);
+
+        if (imagesResult["status_code"] != null && imagesResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getTVSeries(tvID);
     }
 
@@ -182,7 +212,13 @@ async function getTVSeries(tvID) {
         }
     } catch (error) {
         console.log("\TV trailer request error occured", trailersTVAPI, error);
-        await sleep(750);
+
+        if (trailersResult["status_code"] != null && trailersResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getTVSeries(tvID);
     }
 
@@ -338,7 +374,13 @@ async function getUpcomingMovies() {
         }
     } catch (error) {
         console.log("\nUpcoming movie request error occured", page, error);
-        await sleep(750);
+
+        if (result["status_code"] != null && result["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getUpcomingMovies();
     }
 
@@ -449,7 +491,13 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie streaming request error occured", streamingMovieAPI, error);
-        await sleep(750);
+
+        if (streamingResult["status_code"] != null && streamingResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getMovies(movieID);
     }
 
@@ -466,7 +514,13 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie translations request error occured", translationsMovieAPI, error);
-        await sleep(750);
+
+        if (translationResult["status_code"] != null && translationResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getMovies(movieID);
     }
 
@@ -483,7 +537,13 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie credits request error occured", creditsMovieAPI, error);
-        await sleep(750);
+
+        if (creditsResult["status_code"] != null && creditsResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getMovies(movieID);
     }
 
@@ -500,7 +560,13 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie recommendations request error occured", recommendationsMovieAPI, error);
-        await sleep(750);
+
+        if (recommendationsResult["status_code"] != null && recommendationsResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getMovies(movieID);
     }
 
@@ -517,7 +583,13 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie images request error occured", imagesMovieAPI, error);
-        await sleep(750);
+
+        if (imagesResult["status_code"] != null && imagesResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getMovies(movieID);
     }
 
@@ -534,7 +606,13 @@ async function getMovies(movieID) {
         }
     } catch (error) {
         console.log("\nMovie trailer request error occured", trailersMovieAPI, error);
-        await sleep(750);
+
+        if (trailersResult["status_code"] != null && trailersResult["status_code"] == 11) {
+            console.log("Internal Error, waiting for 5s.");
+            await sleep(5000);
+        } else {
+            await sleep(750);
+        }
         return await getMovies(movieID);
     }
 
