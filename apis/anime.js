@@ -19,7 +19,7 @@ async function startAnimeRequests() {
     await getAnimeList();
     console.log(`${malIDList.length} number of anime details will be fetched.`);
 
-    const animeList = [];
+    var animeList = [];
     for (let index = 0; index < malIDList.length; index++) {
         const animeModel = await getAnimeDetails(malIDList[index], 0, 0);
 
@@ -28,6 +28,14 @@ async function startAnimeRequests() {
             !animeModel.genres.some(e => e.name === "Hentai")
         ) {
             animeList.push(animeModel);
+        }
+
+        if (animeList.length >= 2000) {
+            await insertAnime(animeList);
+
+            animeList = [];
+
+            console.log(`AnimeList reset ${animeList} ${animeList.length}.`);
         }
     }
 
