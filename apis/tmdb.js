@@ -229,7 +229,7 @@ async function getTVSeries(tvID) {
             const item = productionCompaniesJson[index];
             productionCompaniesList.push({
                 logo: (item['logo_path'] != null)
-                    ? `${tmdbBaseImageURL}original/${item['logo_path']}`
+                    ? `${tmdbBaseImageURL}original${item['logo_path']}`
                     : null,
                 name: item['name'],
                 origin_country: item['origin_country']
@@ -242,7 +242,7 @@ async function getTVSeries(tvID) {
             const item = networkJson[index];
             networkList.push({
                 logo: (item['logo_path'] != null)
-                    ? `${tmdbBaseImageURL}original/${item['logo_path']}`
+                    ? `${tmdbBaseImageURL}original${item['logo_path']}`
                     : null,
                 name: item['name'],
                 origin_country: item['origin_country']
@@ -267,7 +267,7 @@ async function getTVSeries(tvID) {
                     name: item['name'],
                     description: item['overview'],
                     season_num: item['season_number'],
-                    image_url: `${tmdbBaseImageURL}original/${item['poster_path']}`,
+                    image_url: `${tmdbBaseImageURL}original${item['poster_path']}`,
                 });
             }
         }
@@ -323,7 +323,7 @@ async function getTVSeries(tvID) {
             title_original: result['original_name'],
             title_en: result['name'],
             description: result['overview'],
-            image_url: `${tmdbBaseImageURL}original/${result['poster_path']}`,
+            image_url: `${tmdbBaseImageURL}original${result['poster_path']}`,
             backdrop: backdropImage,
             status: result['status'],
             tmdb_id: result['id'],
@@ -623,7 +623,7 @@ async function getMovies(movieID) {
             const item = productionCompaniesJson[index];
             productionCompaniesList.push({
                 logo: (item['logo_path'] != null)
-                    ? `${tmdbBaseImageURL}original/${item['logo_path']}`
+                    ? `${tmdbBaseImageURL}original${item['logo_path']}`
                     : null,
                 name: item['name'],
                 origin_country: item['origin_country']
@@ -747,7 +747,7 @@ function parseMovieRecommendationJsonData(result) {
                     tmdb_id: id,
                     title_en: title,
                     title_original: titleOriginal,
-                    image_url: `${tmdbBaseImageURL}original/${poster}`,
+                    image_url: `${tmdbBaseImageURL}original${poster}`,
                     description: description,
                     release_date: releaseDate,
                 });
@@ -799,7 +799,7 @@ function parseTVRecommendationJsonData(result) {
                     tmdb_id: id,
                     title_en: title,
                     title_original: titleOriginal,
-                    image_url: `${tmdbBaseImageURL}original/${poster}`,
+                    image_url: `${tmdbBaseImageURL}original${poster}`,
                     description: description,
                     release_date: releaseDate,
                 });
@@ -823,7 +823,7 @@ function parseImageJsonData(result) {
 
             const image = item['file_path'];
             if (image != null && image != "" && imageList.length < 10) {
-                imageList.push(`${tmdbBaseImageURL}original/${image}`);
+                imageList.push(`${tmdbBaseImageURL}original${image}`);
             }
         }
 
@@ -915,7 +915,7 @@ function parseStreamingJsonData(result) {
                     for (let index = 0; index < flatrateJson.length; index++) {
                         const item = flatrateJson[index];
                         flatrateList.push({
-                            logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
+                            logo: `${tmdbBaseImageURL}original${item['logo_path']}`,
                             name: item['provider_name'],
                         });
                     }
@@ -926,7 +926,7 @@ function parseStreamingJsonData(result) {
                     for (let index = 0; index < rentJson.length; index++) {
                         const item = rentJson[index];
                         rentList.push({
-                            logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
+                            logo: `${tmdbBaseImageURL}original${item['logo_path']}`,
                             name: item['provider_name'],
                         });
                     }
@@ -937,7 +937,7 @@ function parseStreamingJsonData(result) {
                     for (let index = 0; index < buyJson.length; index++) {
                         const item = buyJson[index];
                         buyList.push({
-                            logo: `${tmdbBaseImageURL}original/${item['logo_path']}`,
+                            logo: `${tmdbBaseImageURL}original${item['logo_path']}`,
                             name: item['provider_name'],
                         });
                     }

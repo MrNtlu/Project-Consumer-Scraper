@@ -7,6 +7,7 @@ const { ConnectToMongoDB, DisconnectFromMongoDB } = require("./mongodb");
 
 async function main() {
     try{
+        console.log(Date());
         await ConnectToMongoDB();
 
         await GetUpcomingMoviesFromDB();
