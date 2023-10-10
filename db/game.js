@@ -458,7 +458,7 @@ function parseScreenshotJsonData(result) {
                 image != null && image != "" &&
                 isDeleted != null && isDeleted == false
             ) {
-                storeList.push(image);
+                screenshotList.push(image);
             }
         }
 
