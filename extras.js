@@ -1,3 +1,4 @@
+const { StartGameRequests } = require("./apis/game");
 const { GetTVSeries, GetMovies } = require("./apis/tmdb");
 const { TVSeriesModel, MovieModel, ConnectToMongoDB, DisconnectFromMongoDB } = require("./mongodb");
 const { InsertTVSeries, InsertMovies } = require("./scrapers/tmdb");
@@ -74,4 +75,17 @@ async function getRecommendations() {
     }
 }
 
-getRecommendations();
+async function getGames() {
+    try{
+        console.log(Date());
+        await ConnectToMongoDB();
+        await StartGameRequests();
+
+        DisconnectFromMongoDB();
+    } catch(err) {
+        console.log('Main Error occured', err);
+        return;
+    }
+}
+
+getGames();
