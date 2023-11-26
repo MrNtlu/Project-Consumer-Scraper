@@ -5,6 +5,7 @@ const { performance } = require('perf_hooks');
 var page = 1;
 var upcomingPage = 1;
 const malIDList = [];
+const animePageThreshold = 250;
 
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 3000) {
@@ -13,7 +14,6 @@ async function satisfyRateLimiting(endTime, startTime) {
     }
 }
 
-//TODO Pages are limited to 200, remove in the future.
 async function startAnimeRequests() {
     await getUpcomingAnimeList();
     await getAnimeList();
@@ -84,7 +84,7 @@ async function getAnimeList() {
         }
 
         const hasNext = result['pagination']['has_next_page'];
-        if (hasNext && page < 200) {
+        if (hasNext && page < animePageThreshold) {
             page += 1;
             await getAnimeList();
         }

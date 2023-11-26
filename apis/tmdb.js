@@ -12,7 +12,7 @@ const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) :
 const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();
 
-const upcomingPopularityThreshold = 25;
+const upcomingPopularityThreshold = 19;
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;

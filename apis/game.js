@@ -560,7 +560,42 @@ async function insertGame(gameList) {
     }
 }
 
+async function getMissingScreenshotsGamesFromDB() {
+    const gameList = [];
+
+    try {
+        const games = await GameModel.find({
+            $or: [
+                {screenshots: { $exists: false }},
+            ]
+        }).select('rawg_id');
+
+        const gameIDList = games.map(game => game.rawg_id);
+        console.log(`Missing screenshot games db Ended. ${gameIDList.length} number of game details will be fetched.`);
+
+        for (let index = 0; index < gameIDList.length; index++) {
+            relatedPage = 1;
+            relatedGamesList = [];
+            const gameModel = await getGameDetails(gameIDList[index]);
+
+            if (gameModel != null) {
+                gameList.push(gameModel);
+            }
+        }
+        console.log("Missing game screenshot image fetch Ended");
+
+        await insertGame(gameList);
+    } catch (error) {
+        console.log("Get missing game screenshot image from db error", error);
+    }
+
+    await getGameList();
+    await getUpcomingGameList();
+    console.log(`${gameIDList.length} number of game details will be fetched.`);
+}
+
 module.exports.StartGameRequests = startGameRequests;
+module.exports.GetMissingScreenshotsGamesFromDB = getMissingScreenshotsGamesFromDB;
 module.exports.GetGameDetails = getGameDetails;
 module.exports.SatisfyRateLimiting = satisfyRateLimiting;
 module.exports.InsertGame = insertGame;

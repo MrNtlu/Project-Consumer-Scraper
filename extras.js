@@ -1,4 +1,4 @@
-const { StartGameRequests, GetGameDetails, InsertGame } = require("./apis/game");
+const { StartGameRequests, GetGameDetails, InsertGame, GetMissingScreenshotsGamesFromDB } = require("./apis/game");
 const { GetTVSeries, GetMovies } = require("./apis/tmdb");
 const { TVSeriesModel, MovieModel, ConnectToMongoDB, DisconnectFromMongoDB, GameModel } = require("./mongodb");
 const { InsertTVSeries, InsertMovies } = require("./scrapers/tmdb");
@@ -61,33 +61,6 @@ async function getMissingTrailerImageTVSeriesFromDB() {
     }
 }
 
-async function getMissingScreenshotsGamesFromDB() {
-    const gameList = [];
-
-    try {
-        const games = await GameModel.find({
-            $or: [
-                {screenshots: { $exists: false }},
-            ]
-        }).select('rawg_id');
-
-        const gameIDList = games.map(game => game.rawg_id);
-        console.log(`Missing screenshot games db Ended. ${gameIDList.length} number of game details will be fetched.`);
-
-        for (let index = 0; index < gameIDList.length; index++) {
-            const gameModel = await GetGameDetails(gameIDList[index]);
-
-            if (gameModel != null) {
-                gameList.push(gameModel);
-            }
-        }
-        console.log("Missing game screenshot image fetch Ended");
-
-        await InsertGame(gameList);
-    } catch (error) {
-        console.log("Get missing game screenshot image from db error", error);
-    }
-}
 
 async function getRecommendations() {
     try {
@@ -107,7 +80,7 @@ async function getScreenshots() {
     try {
         await ConnectToMongoDB();
 
-        await getMissingScreenshotsGamesFromDB();
+        await GetMissingScreenshotsGamesFromDB();
 
         DisconnectFromMongoDB();
     } catch(err) {

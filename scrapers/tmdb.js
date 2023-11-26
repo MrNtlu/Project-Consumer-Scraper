@@ -50,11 +50,9 @@ async function startMovieFileDownload() {
 
     await sleep(3000);
 
-    await Promise.all([
-        readFile(pathList[0].replace(".gz", ''), false),
-        sleep(2000),
-        readFile(pathList[1].replace(".gz", ''), true)
-    ])
+    await readFile(pathList[0].replace(".gz", ''), false)
+    await sleep(2000)
+    await readFile(pathList[1].replace(".gz", ''), true)
 }
 
 async function extractFile(filePath) {
@@ -66,8 +64,8 @@ async function extractFile(filePath) {
     })
 }
 
-const movieThreshold = 17;
-const tvThreshold = 23;
+const movieThreshold = 10;
+const tvThreshold = 20;
 
 async function readFile(filePath, isMovie) {
     console.log("Reading file", filePath);
@@ -89,7 +87,7 @@ async function readFile(filePath, isMovie) {
                     movieList.push(movieModel);
                 }
 
-                if (movieList.length >= 7000) {
+                if (movieList.length >= 5000) {
                     await insertMovies(movieList, false);
 
                     movieList = [];
@@ -127,6 +125,7 @@ async function readFile(filePath, isMovie) {
 
                 if (
                     tvModel != null &&
+                    tvModel.tmdb_id != "12225" &&
                     !(tvModel.genres.some(e => e === "News")) &&
                     !(tvModel.production_companies.some(e => e.origin_country === "JP") && tvModel.genres.some(e => e === "Animation")) &&
                     !tvModel.networks.some(e => e.origin_country === "IN") &&
@@ -135,7 +134,7 @@ async function readFile(filePath, isMovie) {
                     tvSeriesList.push(tvModel);
                 }
 
-                if (tvSeriesList.length >= 7000) {
+                if (tvSeriesList.length >= 6000) {
                     await insertTVSeries(tvSeriesList);
 
                     tvSeriesList = [];
