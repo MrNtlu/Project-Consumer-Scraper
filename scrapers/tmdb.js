@@ -15,8 +15,7 @@ const year = today.getUTCFullYear();
 const movieDownloadURL = `movie_ids_${month}_${day}_${year}${tmdbFileExtension}`;
 const tvSeriesDownloadURL = `tv_series_ids_${month}_${day}_${year}${tmdbFileExtension}`;
 const downloadURLList = [tvSeriesDownloadURL, movieDownloadURL];
-const downloadFolder = "downloads"
-const movieDownloadPath = `./${downloadFolder}/${movieDownloadURL.replace(".gz", '')}`
+const downloadFolder = "downloads";
 
 const pathList = [];
 async function startMovieFileDownload() {
@@ -45,14 +44,14 @@ async function startMovieFileDownload() {
         }
     }
 
-    await extractFile(pathList[0]);
-    await extractFile(pathList[1]);
+    for (let index = 0; index < pathList.length; index++) {
+        await extractFile(pathList[index]);
+    }
 
     await sleep(3000);
-
-    await readFile(pathList[0].replace(".gz", ''), false)
-    await sleep(2000)
-    await readFile(pathList[1].replace(".gz", ''), true)
+    await readFile(pathList[0].replace(".gz", ''), false);
+    await sleep(2000);
+    await readFile(pathList[1].replace(".gz", ''), true);
 }
 
 async function extractFile(filePath) {
@@ -174,6 +173,7 @@ async function insertMovies(movieList, isUpcoming) {
                         description: element.description,
                         backdrop: element.backdrop,
                         image_url: element.image_url,
+                        thumb_image_url: element.thumb_image_url,
                         status: isUpcoming ? "Upcoming" : status,
                         length: element.length,
                         imdb_id: element.imdb_id,
@@ -220,6 +220,7 @@ async function insertTVSeries(tvSeriesList) {
                         title_en: element.title_en,
                         description: element.description,
                         image_url: element.image_url,
+                        thumb_image_url: element.thumb_image_url,
                         backdrop: element.backdrop,
                         status: element.status,
                         tmdb_id: element.tmdb_id,

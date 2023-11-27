@@ -312,11 +312,11 @@ async function getTVSeries(tvID) {
 
         var backdropImage = null
         if (result['backdrop_path'] != null && result['backdrop_path'] != undefined) {
-            backdropImage = result['backdrop_path']
+            backdropImage = result['backdrop_path'];
         }
 
         if (backdropImage != null) {
-            backdropImage = `${tmdbBaseImageURL}original${backdropImage}`
+            backdropImage = `${tmdbBaseImageURL}original${backdropImage}`;
         }
 
         const tempTVModel = TVSeriesModel({
@@ -324,6 +324,7 @@ async function getTVSeries(tvID) {
             title_en: result['name'],
             description: result['overview'],
             image_url: `${tmdbBaseImageURL}original${result['poster_path']}`,
+            thumb_image_url: `${tmdbBaseImageURL}w185${result['poster_path']}`,
             backdrop: backdropImage,
             status: result['status'],
             tmdb_id: result['id'],
@@ -344,7 +345,7 @@ async function getTVSeries(tvID) {
             actors: creditsList,
             translations: translationsList,
             created_at: new Date(),
-        })
+        });
 
         return tempTVModel;
     } catch (error) {
@@ -694,6 +695,7 @@ async function getMovies(movieID) {
             title_en: result['title'],
             description: result['overview'],
             image_url: `${tmdbBaseImageURL}original${result['poster_path']}`,
+            thumb_image_url: `${tmdbBaseImageURL}w185${result['poster_path']}`,
             backdrop: backdropImage,
             status: result['status'],
             length: result['runtime'],

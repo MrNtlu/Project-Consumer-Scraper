@@ -73,6 +73,7 @@ const MovieModel = mongoose.model(
         title_en: String,
         description: String,
         image_url: String,
+        thumb_image_url: String,
         backdrop: String,
         status: String,
         length: Number,
@@ -103,6 +104,7 @@ const TVSeriesModel = mongoose.model(
         title_en: String,
         description: String,
         image_url: String,
+        thumb_image_url: String,
         backdrop: String,
         status: String,
         tmdb_id: String,
@@ -130,6 +132,25 @@ const TVSeriesModel = mongoose.model(
         ],
         actors: [actorSchema],
         translations: [translationSchema],
+        created_at: Date,
+    }, {
+        versionKey: false
+    }
+));
+
+const PersonModel = mongoose.model(
+    "people",
+    mongoose.Schema({
+        name: String,
+        biography: String,
+        birthday: String,
+        deathday: String,
+        tmdb_id: String,
+        tmdb_popularity: Number,
+        place_of_birth: String,
+        image_url: String,
+        thumb_image_url: String,
+        images: [String],
         created_at: Date,
     }, {
         versionKey: false
@@ -174,6 +195,7 @@ const AnimeModel = mongoose.model(
         title_jp: String,
         description: String,
         image_url: String,
+        small_image_url: String,
         mal_id: Number,
         mal_score: Number,
         mal_scored_by: Number,
@@ -212,6 +234,54 @@ const AnimeModel = mongoose.model(
         recommendations: [animeRecommendationSchema],
         producers: [animeNameURLSchema],
         studios: [animeNameURLSchema],
+        genres: [animeGenreSchema],
+        themes: [animeGenreSchema],
+        demographics: [animeGenreSchema],
+        relations: [
+            mongoose.Schema({
+                relation: String,
+                source: [animeRelationSchema],
+            },{ _id : false })
+        ],
+        characters: [animeCharacterSchema],
+        created_at: Date,
+    }, {
+        versionKey: false
+    }
+));
+
+const MangaModel = mongoose.model(
+    "mangas",
+    mongoose.Schema({
+        title_original: String,
+        title_en: String,
+        title_jp: String,
+        description: String,
+        description_extra: String,
+        image_url: String,
+        small_image_url: String,
+        mal_id: Number,
+        mal_score: Number,
+        mal_scored_by: Number,
+        mal_members: Number,
+        mal_favorites: Number,
+        type: String,
+        chapters: Number,
+        volumes: Number,
+        status: String,
+        serializations: [animeNameURLSchema],
+        is_publishing: Boolean,
+        published: mongoose.Schema({
+            from: String,
+            to: String,
+            from_day: Number,
+            from_month: Number,
+            from_year: Number,
+            to_day: Number,
+            to_month: Number,
+            to_year: Number,
+        }),
+        recommendations: [animeRecommendationSchema],
         genres: [animeGenreSchema],
         themes: [animeGenreSchema],
         demographics: [animeGenreSchema],
@@ -273,9 +343,39 @@ const GameModel = mongoose.model(
     }
 ));
 
+const ComicModel = mongoose.model(
+    "comic-books",
+    mongoose.Schema({
+        title_en: String,
+        image_url: String,
+        thumb_image_url: String,
+        count_of_issues: Number,
+        description: String,
+        comic_id: Number,
+        start_year: String,
+        publisher: mongoose.Schema({
+            comic_id: Number,
+            name: String,
+        },{ _id : false }),
+        characters: [
+            mongoose.Schema({
+                comic_id: Number,
+                name: String,
+                count: String,
+            },{ _id : false })
+        ],
+        created_at: Date,
+    }, {
+        versionKey: false
+    }
+));
+
 module.exports.MovieModel = MovieModel;
 module.exports.TVSeriesModel = TVSeriesModel;
+module.exports.PersonModel = PersonModel;
 module.exports.AnimeModel = AnimeModel;
+module.exports.MangaModel = MangaModel;
 module.exports.GameModel = GameModel;
+module.exports.ComicModel = ComicModel;
 module.exports.ConnectToMongoDB = connectToMongoDB;
 module.exports.DisconnectFromMongoDB = disconnectFromMongoDB;

@@ -1,11 +1,10 @@
 const { jikanBaseURL, sleep } = require("../constants");
-const { AnimeModel } = require("../mongodb");
 const { performance } = require('perf_hooks');
+const { MangaModel } = require("../mongodb");
 
 var page = 1;
-var upcomingPage = 1;
 const malIDList = [];
-const animePageThreshold = 250;
+const mangaPageThreshold = 200;
 
 async function satisfyRateLimiting(endTime, startTime) {
     if (endTime - startTime < 3000) {
@@ -14,45 +13,44 @@ async function satisfyRateLimiting(endTime, startTime) {
     }
 }
 
-async function startAnimeRequests() {
-    await getUpcomingAnimeList();
-    await getAnimeList();
-    console.log(`${malIDList.length} number of anime details will be fetched.`);
+async function startMangaRequests() {
+    await getMangaList();
+    console.log(`${malIDList.length} number of manga details will be fetched.`);
 
-    var animeList = [];
+    var mangaList = [];
     for (let index = 0; index < malIDList.length; index++) {
-        const animeModel = await getAnimeDetails(malIDList[index], 0, 0);
+        const mangaModel = await getMangaDetails(malIDList[index], 0, 0);
 
         if (
-            animeModel != null &&
-            !animeModel.genres.some(e => e.name === "Hentai")
+            mangaModel != null &&
+            !mangaModel.genres.some(e => e.name === "Hentai")
         ) {
-            animeList.push(animeModel);
+            mangaList.push(mangaModel);
         }
 
-        if (animeList.length >= 2000) {
-            await insertAnime(animeList);
+        if (mangaList.length >= 2000) {
+            await insertManga(mangaList);
 
-            animeList = [];
+            mangaList = [];
 
-            console.log(`AnimeList reset ${animeList} ${animeList.length}.`);
+            console.log(`MangaList reset ${mangaList} ${mangaList.length}.`);
         }
     }
 
-    console.log(`${animeList.length} number of anime details fetched.`);
+    console.log(`${mangaList.length} number of manga details fetched.`);
 
-    await insertAnime(animeList);
+    await insertManga(mangaList);
 
-    console.log("Animes are DONE!");
+    console.log("Mangas are DONE!");
 }
 
-async function getAnimeList() {
+async function getMangaList() {
     const startTime = performance.now();
 
-    const animeAPI = `${jikanBaseURL}top/anime?page=${page}`;
+    const mangaAPI = `${jikanBaseURL}top/manga?page=${page}`;
 
     let request = new Request(
-        animeAPI, {
+        mangaAPI, {
             method: 'GET',
         }
     );
@@ -67,9 +65,9 @@ async function getAnimeList() {
             throw Error(`${result['status']} ${result['message']}`)
         }
     } catch (error) {
-        console.log("\nAnime request error occured", page, error);
+        console.log("\nManga request error occured", page, error);
         await sleep(1700);
-        await getAnimeList();
+        await getMangaList();
         return;
     }
 
@@ -84,85 +82,37 @@ async function getAnimeList() {
         }
 
         const hasNext = result['pagination']['has_next_page'];
-        if (hasNext && page < animePageThreshold) {
+        if (hasNext && page < mangaPageThreshold) {
             page += 1;
-            await getAnimeList();
+            await getMangaList();
         }
     } catch (error) {
-        console.log("Anime error occured", error);
+        console.log("Manga error occured", error);
         return;
     }
 }
 
-async function getUpcomingAnimeList() {
-    const startTime = performance.now();
+async function getMangaDetails(malID, charRetryCount, recommendationRetryCount) {
+    const baseMangaDetailsAPI = jikanBaseURL + "manga/" + malID;
 
-    const upcomingAnimeAPI = `${jikanBaseURL}seasons/upcoming?page=${upcomingPage}`;
-
-    let request = new Request(
-        upcomingAnimeAPI, {
-            method: 'GET',
-        }
-    );
-
-    let result;
-    try {
-        result = await fetch(request).then((response) => {
-            return response.json();
-        });
-
-        if (result['status'] != null) {
-            throw Error(`${result['status']} ${result['message']}`)
-        }
-    } catch (error) {
-        console.log("\nUpcoming Anime request error occured", upcomingPage, error);
-        await sleep(1700);
-        await getUpcomingAnimeList();
-        return;
-    }
-
-    const endTime = performance.now();
-    await satisfyRateLimiting(endTime, startTime);
-
-    try {
-        const data = result['data'];
-        for (let index = 0; index < data.length; index++) {
-            const item = data[index];
-            malIDList.push(item['mal_id']);
-        }
-
-        const hasNext = result['pagination']['has_next_page'];
-        if (hasNext) {
-            upcomingPage += 1;
-            await getUpcomingAnimeList();
-        }
-    } catch (error) {
-        console.log("Upcoming Anime error occured", error);
-        return;
-    }
-}
-
-async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) {
-    const baseAnimeDetailsAPI = jikanBaseURL + "anime/" + malID;
-
-    const animeDetailsAPI = `${baseAnimeDetailsAPI}/full`;
-    const animeCharactersAPI = `${baseAnimeDetailsAPI}/characters`;
-    const animeRecommendationAPI = `${baseAnimeDetailsAPI}/recommendations`;
+    const mangaDetailsAPI = `${baseMangaDetailsAPI}/full`;
+    const mangaCharactersAPI = `${baseMangaDetailsAPI}/characters`;
+    const mangaRecommendationAPI = `${baseMangaDetailsAPI}/recommendations`;
 
     let request = new Request(
-        animeDetailsAPI, {
+        mangaDetailsAPI, {
             method: 'GET',
         }
     );
 
     let charRequest = new Request(
-        animeCharactersAPI, {
+        mangaCharactersAPI, {
             method: 'GET',
         }
     );
 
     let recommendationRequest = new Request(
-        animeRecommendationAPI, {
+        mangaRecommendationAPI, {
             method: 'GET',
         }
     );
@@ -170,6 +120,7 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
     let result;
     let charResult;
     let recommendationResult;
+
     try {
         result = await fetch(request).then((response) => {
             return response.json();
@@ -177,21 +128,21 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
 
         if (result['status'] != null) {
             if (result['status'] == 404) {
-                console.log("404 Not Found. Stopping the request.", malID, animeDetailsAPI);
+                console.log("404 Not Found. Stopping the request.", malID, mangaDetailsAPI);
                 await sleep(300);
                 return null;
             } else if (result['status'] == 403) {
-                console.log("403 Failed to connect. Let's cool it down for 1 minute.", malID, animeDetailsAPI);
+                console.log("403 Failed to connect. Let's cool it down for 1 minute.", malID, mangaDetailsAPI);
                 await sleep(61000);
-                return await getAnimeDetails(malID);
+                return await getMangaDetails(malID);
             } else if (result['status'] == 408) {
-                console.log("408 Timeout exeption. Will wait for 1 minute.", animeDetailsAPI);
+                console.log("408 Timeout exeption. Will wait for 1 minute.", mangaDetailsAPI);
                 await sleep(61000);
-                return await getAnimeDetails(malID);
+                return await getMangaDetails(malID);
             } else {
-                console.log("Unexpected error occured.", result, animeDetailsAPI);
+                console.log("Unexpected error occured.", result, mangaDetailsAPI);
                 await sleep(62500);
-                return await getAnimeDetails(malID);
+                return await getMangaDetails(malID);
             }
         }
 
@@ -213,21 +164,21 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
                 }
 
                 if (charResult['status'] == 404) {
-                    console.log("Anime Character 404 Not Found. Canceling the character request.", malID, animeCharactersAPI);
+                    console.log("Manga Character 404 Not Found. Canceling the character request.", malID, mangaCharactersAPI);
                     await sleep(5000);
-                    return await getAnimeDetails(malID, 999, recommendCount);
+                    return await getMangaDetails(malID, 999, recommendCount);
                 } else if (charResult['status'] == 403) {
-                    console.log("403 Failed to connect. Let's cool it down for 1 minute. AnimeChar ", malID, animeCharactersAPI);
+                    console.log("403 Failed to connect. Let's cool it down for 1 minute. MangaChar ", malID, mangaCharactersAPI);
                     await sleep(61000);
-                    return await getAnimeDetails(malID, newRetryCount, recommendCount);
+                    return await getMangaDetails(malID, newRetryCount, recommendCount);
                 } else if (charResult['status'] == 408) {
-                    console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeChar ", animeCharactersAPI);
+                    console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. MangaChar ", mangaCharactersAPI);
                     await sleep(80000);
-                    return await getAnimeDetails(malID, newRetryCount, recommendCount);
+                    return await getMangaDetails(malID, newRetryCount, recommendCount);
                 } else {
-                    console.log("Unexpected error occured. Will wait for 1 minute. AnimeChar ", charResult, animeCharactersAPI);
+                    console.log("Unexpected error occured. Will wait for 1 minute. MangaChar ", charResult, mangaCharactersAPI);
                     await sleep(61500);
-                    return await getAnimeDetails(malID, newRetryCount, recommendCount);
+                    return await getMangaDetails(malID, newRetryCount, recommendCount);
                 }
             }
 
@@ -250,34 +201,34 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
                 }
 
                 if (recommendationResult['status'] == 404) {
-                    console.log("Anime Recommendation 404 Not Found. Canceling the recommendation request.", malID, animeRecommendationAPI);
+                    console.log("Manga Recommendation 404 Not Found. Canceling the recommendation request.", malID, mangaRecommendationAPI);
                     await sleep(5000);
-                    return await getAnimeDetails(malID, charCount, 999);
+                    return await getMangaDetails(malID, charCount, 999);
                 } else if (recommendationResult['status'] == 403) {
-                    console.log("403 Failed to connect. Let's cool it down for 1 minute. AnimeRecommend ", malID, animeRecommendationAPI);
+                    console.log("403 Failed to connect. Let's cool it down for 1 minute. MangaRecommend ", malID, mangaRecommendationAPI);
                     await sleep(61000);
-                    return await getAnimeDetails(malID, charCount, newRetryCount);
+                    return await getMangaDetails(malID, charCount, newRetryCount);
                 } else if (recommendationResult['status'] == 408) {
-                    console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. AnimeRecommend ", animeRecommendationAPI);
+                    console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. MangaRecommend ", mangaRecommendationAPI);
                     await sleep(80000);
-                    return await getAnimeDetails(malID, charCount, newRetryCount);
+                    return await getMangaDetails(malID, charCount, newRetryCount);
                 } else if (recommendationResult['status'] == 429) {
-                    console.log("429 RateLimit exeption. Will wait for 3 minutes. AnimeRecommend ", animeRecommendationAPI);
+                    console.log("429 RateLimit exeption. Will wait for 3 minutes. MangaRecommend ", mangaRecommendationAPI);
                     await sleep(180000);
-                    return await getAnimeDetails(malID, charCount, newRetryCount);
+                    return await getMangaDetails(malID, charCount, newRetryCount);
                 } else {
-                    console.log("Unexpected error occured. Will wait for 2 minute. AnimeRecommend ", recommendationResult, animeRecommendationAPI);
+                    console.log("Unexpected error occured. Will wait for 2 minute. MangaRecommend ", recommendationResult, mangaRecommendationAPI);
                     await sleep(120000);
-                    return await getAnimeDetails(malID, charCount, newRetryCount);
+                    return await getMangaDetails(malID, charCount, newRetryCount);
                 }
             }
 
             await sleep(45000);
         }
     } catch (error) {
-        console.log("\nAnime details request error occured. Will wait for 2 minutes", malID, animeDetailsAPI, error);
+        console.log("\nManga details request error occured. Will wait for 2 minutes", malID, mangaDetailsAPI, error);
         await sleep(120000);
-        return await getAnimeDetails(malID, charRetryCount, recommendationRetryCount);
+        return await getMangaDetails(malID, charRetryCount, recommendationRetryCount);
     }
 
     try {
@@ -327,36 +278,16 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
         }
 
         if (jsonData != undefined || jsonData != null) {
-            const streamingJson = jsonData['streaming'];
-            const streamingList = [];
-            if (streamingJson != null && streamingJson != undefined) {
-                for (let index = 0; index < streamingJson.length; index++) {
-                    const item = streamingJson[index];
-                    streamingList.push({
+            const serializationJson = jsonData['serializations'];
+            const serializationList = [];
+            if (serializationJson != null && serializationJson != undefined) {
+                for (let index = 0; index < serializationJson.length; index++) {
+                    const item = serializationJson[index];
+                    serializationList.push({
                         name: item['name'],
                         url: item['url'],
                     });
                 }
-            }
-
-            const producerJson = jsonData['producers'];
-            const producerList = [];
-            for (let index = 0; index < producerJson.length; index++) {
-                const item = producerJson[index];
-                producerList.push({
-                    name: item['name'],
-                    url: item['url'],
-                });
-            }
-
-            const studioJson = jsonData['studios'];
-            const studioList = [];
-            for (let index = 0; index < studioJson.length; index++) {
-                const item = studioJson[index];
-                studioList.push({
-                    name: item['name'],
-                    url: item['url'],
-                });
             }
 
             const genreJson = jsonData['genres'];
@@ -412,11 +343,12 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
                 });
             }
 
-            const tempAnimeModel = AnimeModel({
+            const tempMangaModel = MangaModel({
                 title_original: jsonData['title'],
                 title_en: jsonData['title_english'],
                 title_jp: jsonData['title_japanese'],
                 description: jsonData['synopsis'],
+                description_extra: jsonData['background'],
                 image_url: jsonData['images']['jpg']['large_image_url'],
                 small_image_url: jsonData['images']['jpg']['small_image_url'],
                 mal_id: jsonData['mal_id'],
@@ -424,29 +356,23 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
                 mal_scored_by: jsonData['scored_by'],
                 mal_members: jsonData['members'],
                 mal_favorites: jsonData['favorites'],
-                trailer: jsonData['trailer']['url'],
                 type: jsonData['type'],
-                source: jsonData['source'],
-                episodes: jsonData['episodes'],
-                season: jsonData['season'],
-                year: jsonData['year'],
+                chapters: jsonData['chapters'],
+                volumes: jsonData['volumes'],
                 status: jsonData['status'],
-                is_airing: jsonData['airing'],
-                streaming: streamingList,
-                aired: {
-                    from: jsonData['aired']['from'],
-                    to: jsonData['aired']['to'],
-                    from_day: jsonData['aired']['prop']['from']['day'],
-                    from_month: jsonData['aired']['prop']['from']['month'],
-                    from_year: jsonData['aired']['prop']['from']['year'],
-                    to_day: jsonData['aired']['prop']['to']['day'],
-                    to_month: jsonData['aired']['prop']['to']['month'],
-                    to_year: jsonData['aired']['prop']['to']['year'],
+                serializations: serializationList,
+                is_publishing: jsonData['publishing'],
+                published: {
+                    from: jsonData['published']['from'],
+                    to: jsonData['published']['to'],
+                    from_day: jsonData['published']['prop']['from']['day'],
+                    from_month: jsonData['published']['prop']['from']['month'],
+                    from_year: jsonData['published']['prop']['from']['year'],
+                    to_day: jsonData['published']['prop']['to']['day'],
+                    to_month: jsonData['published']['prop']['to']['month'],
+                    to_year: jsonData['published']['prop']['to']['year'],
                 },
-                age_rating: jsonData['rating'],
                 recommendations: recommendationList,
-                producers: producerList,
-                studios: studioList,
                 genres: genreList,
                 themes: themeList,
                 demographics: demographicList,
@@ -455,23 +381,23 @@ async function getAnimeDetails(malID, charRetryCount, recommendationRetryCount) 
                 created_at: new Date(),
             })
 
-            return tempAnimeModel;
+            return tempMangaModel;
         }
 
         return null;
     } catch (error) {
-        console.log("Anime error occured", malID, error);
+        console.log("Manga error occured", malID, error);
         return null;
     }
 }
 
-async function insertAnime(animeList) {
-    console.log(`Inserting ${animeList.length} number of items to Anime DB.`);
+async function insertManga(mangaList) {
+    console.log(`Inserting ${mangaList.length} number of items to Manga DB.`);
 
-    for (let index = 0; index < animeList.length; index++) {
-        const element = animeList[index];
+    for (let index = 0; index < mangaList.length; index++) {
+        const element = mangaList[index];
 
-        animeList[index] = {
+        mangaList[index] = {
             'updateOne': {
                 'filter': {'mal_id': element.mal_id},
                 'update': {
@@ -480,6 +406,7 @@ async function insertAnime(animeList) {
                         title_en: element.title_en,
                         title_jp: element.title_jp,
                         description: element.description,
+                        description_extra: element.description_extra,
                         image_url: element.image_url,
                         small_image_url: element.small_image_url,
                         mal_id: element.mal_id,
@@ -487,20 +414,14 @@ async function insertAnime(animeList) {
                         mal_scored_by: element.mal_scored_by,
                         mal_members: element.mal_members,
                         mal_favorites: element.mal_favorites,
-                        trailer: element.trailer,
                         type: element.type,
-                        source: element.source,
-                        episodes: element.episodes,
-                        season: element.season,
-                        year: element.year,
+                        chapters: element.chapters,
+                        volumes: element.volumes,
                         status: element.status,
-                        is_airing: element.is_airing,
-                        streaming: element.streaming,
-                        aired: element.aired,
-                        age_rating: element.age_rating,
+                        serializations: element.serializations,
+                        is_publishing: element.is_publishing,
+                        published: element.published,
                         recommendations: element.recommendations,
-                        producers: element.producers,
-                        studios: element.studios,
                         genres: element.genres,
                         themes: element.themes,
                         demographics: element.demographics,
@@ -513,11 +434,11 @@ async function insertAnime(animeList) {
             }
         }
     }
-    await AnimeModel.bulkWrite(animeList);
-    console.log(`Inserted ${animeList.length} number of items to Anime DB.`);
+    await MangaModel.bulkWrite(mangaList);
+    console.log(`Inserted ${mangaList.length} number of items to Manga DB.`);
 }
 
-module.exports.StartAnimeRequests = startAnimeRequests;
-module.exports.GetAnimeDetails = getAnimeDetails;
+module.exports.StartMangaRequests = startMangaRequests;
+module.exports.GetMangaDetails = getMangaDetails;
 module.exports.SatisfyRateLimiting = satisfyRateLimiting;
-module.exports.InsertAnime = insertAnime;
+module.exports.InsertManga = insertManga;
