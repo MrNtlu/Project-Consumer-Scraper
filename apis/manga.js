@@ -139,6 +139,10 @@ async function getMangaDetails(malID, charRetryCount, recommendationRetryCount) 
                 console.log("408 Timeout exeption. Will wait for 1 minute.", mangaDetailsAPI);
                 await sleep(61000);
                 return await getMangaDetails(malID);
+            } else if (result['status'] == 500) {
+                console.log("500 exeption. Will wait for 1 minute.", mangaDetailsAPI);
+                await sleep(61000);
+                return null;
             } else {
                 console.log("Unexpected error occured.", result, mangaDetailsAPI);
                 await sleep(62500);
@@ -175,7 +179,11 @@ async function getMangaDetails(malID, charRetryCount, recommendationRetryCount) 
                     console.log("408 Timeout exeption. Will wait for 1 minute 20 seconds. MangaChar ", mangaCharactersAPI);
                     await sleep(80000);
                     return await getMangaDetails(malID, newRetryCount, recommendCount);
-                } else {
+                } else if (charResult['status'] == 500) {
+                    console.log("500 exeption. Will wait for 1 minute. MangaChar", mangaCharactersAPI);
+                    await sleep(61000);
+                    return await getMangaDetails(malID, 999, recommendCount);
+                }  else {
                     console.log("Unexpected error occured. Will wait for 1 minute. MangaChar ", charResult, mangaCharactersAPI);
                     await sleep(61500);
                     return await getMangaDetails(malID, newRetryCount, recommendCount);
@@ -216,6 +224,10 @@ async function getMangaDetails(malID, charRetryCount, recommendationRetryCount) 
                     console.log("429 RateLimit exeption. Will wait for 3 minutes. MangaRecommend ", mangaRecommendationAPI);
                     await sleep(180000);
                     return await getMangaDetails(malID, charCount, newRetryCount);
+                } else if (recommendationResult['status'] == 500) {
+                    console.log("500 exeption. Will wait for 1 minute. MangaRecommend ", mangaRecommendationAPI);
+                    await sleep(61000);
+                    return await getMangaDetails(malID, charCount, 999);
                 } else {
                     console.log("Unexpected error occured. Will wait for 2 minute. MangaRecommend ", recommendationResult, mangaRecommendationAPI);
                     await sleep(120000);
