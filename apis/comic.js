@@ -37,8 +37,6 @@ async function startComicRequests() {
         const comicModel = await getComicVolume(comicIDList[index]);
 
         if (comicModel != null) {
-            console.log(comicModel);
-
             comicList.push(comicModel);
         }
 
@@ -200,7 +198,7 @@ async function insertComic(comicList) {
 
         comicList[index] = {
             'updateOne': {
-                'filter': {'rawg_id': element.comic_id},
+                'filter': {'comic_id': element.comic_id},
                 'update': {
                     "$set": {
                         title_en: element.title_en,

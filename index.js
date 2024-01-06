@@ -11,8 +11,8 @@ async function main() {
         console.log(Date());
         await ConnectToMongoDB();
 
-        await StartMangaRequests();
         await StartComicRequests();
+        await StartMangaRequests();
         await StartAnimeRequests();
         await StartMovieFileDownload();
         await StartGameRequests();
