@@ -153,18 +153,20 @@ async function getComicVolume(comicID) {
         const charJson = volumeResult['characters'];
         const charList = [];
 
-        var charCount = charJson.length;
-        if (charCount > 100) {
-            charCount = 100;
-        }
-        for (let index = 0; index < charCount; index++) {
-            const item = charJson[index];
+        if (charJson != null && charJson != undefined) {
+            var charCount = charJson.length;
+            if (charCount > 100) {
+                charCount = 100;
+            }
+            for (let index = 0; index < charCount; index++) {
+                const item = charJson[index];
 
-            charList.push({
-                comic_id: item['id'],
-                name: item['name'],
-                count: item['count'],
-            });
+                charList.push({
+                    comic_id: item['id'],
+                    name: item['name'],
+                    count: item['count'],
+                });
+            }
         }
 
         const tempComicModel = ComicModel({
