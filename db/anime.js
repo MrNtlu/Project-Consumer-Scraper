@@ -23,6 +23,9 @@ async function getUpcomingAnimeFromDB() {
                     status: "Not yet aired",
                 },
                 {
+                    status: "Currently Airing",
+                },
+                {
                     "aired.from": {
                         $gt: `${year}-${month}-${day}`,
                     },

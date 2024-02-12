@@ -847,8 +847,8 @@ function parseVideoJsonData(result) {
             const site = item['site'];
             const key = item['key'];
             const type = item['type'];
-            const official = ['official'];
-            const name = ['name'];
+            const official = item['official'];
+            const name = item['name'];
 
             if (
                 site != null && (site == "YouTube" || site == "Youtube") &&
@@ -864,7 +864,6 @@ function parseVideoJsonData(result) {
                 });
             }
         }
-
         return videoList;
     } catch (error) {
         console.log("Video parse error occured", error);
