@@ -17,7 +17,6 @@ async function getUpcomingAnimeFromDB() {
 
     try {
         const animes = await AnimeModel.find({
-            is_airing: false,
             $or: [
                 {
                     status: "Not yet aired",
