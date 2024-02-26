@@ -128,6 +128,13 @@ async function readFile(filePath, isMovie) {
                     !(tvModel.genres.some(e => e === "News")) &&
                     !(tvModel.production_companies.some(e => e.origin_country === "JP") && tvModel.genres.some(e => e === "Animation")) &&
                     !tvModel.networks.some(e => e.origin_country === "IN") &&
+                    !(
+                        (tvModel.streaming != null) &&
+                        (tvModel.streaming.filter(e => e.country_code == "US") != null) &&
+                        ((tvModel.streaming.filter(e => e.country_code == "US")[0] != null)) &&
+                        (tvModel.streaming.filter(e => e.country_code == "US")[0].streaming_platforms != null) &&
+                        (tvModel.streaming.filter(e => e.country_code == "US")[0].streaming_platforms.some(e => e.name.includes("Crunchyroll")))
+                    ) &&
                     tvModel.first_air_date != ""
                 ) {
                     tvSeriesList.push(tvModel);
