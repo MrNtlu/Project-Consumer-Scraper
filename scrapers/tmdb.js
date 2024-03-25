@@ -196,7 +196,6 @@ async function insertMovies(movieList, isUpcoming) {
                         recommendations: element.recommendations,
                         streaming: element.streaming,
                         actors: element.actors,
-                        translations: element.translations,
                         created_at: new Date(),
                     }
                 },
@@ -246,7 +245,6 @@ async function insertTVSeries(tvSeriesList) {
                         networks: element.networks,
                         seasons: element.seasons,
                         actors: element.actors,
-                        translations: element.translations,
                         created_at: new Date(),
                     }
                 },

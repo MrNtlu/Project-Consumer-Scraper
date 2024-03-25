@@ -16,7 +16,6 @@ const upcomingPopularityThreshold = 19;
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
-    const translationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const creditsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
     const recommendationsTVAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`
@@ -31,12 +30,6 @@ async function getTVSeries(tvID) {
 
     let streamingRequest = new Request(
         streamingTVAPI, {
-            method: 'GET',
-        }
-    );
-
-    let translationRequest = new Request(
-        translationsTVAPI, {
             method: 'GET',
         }
     );
@@ -99,29 +92,6 @@ async function getTVSeries(tvID) {
         console.log("\nTVSeries streaming request error occured", streamingTVAPI, error);
 
         if (streamingResult != undefined && streamingResult != null && streamingResult["status_code"] != null && streamingResult["status_code"] == 11) {
-            console.log("Internal Error, waiting for 5s.");
-            await sleep(5000);
-        } else {
-            await sleep(1500);
-        }
-        return await getTVSeries(tvID);
-    }
-
-    await sleep(1000);
-
-    let translationResult;
-    try {
-        translationResult = await fetch(translationRequest).then((response) => {
-            return response.json();
-        });
-
-        if (translationResult['success'] != null) {
-            throw Error(translationResult["status_message"] != null ? translationResult["status_message"] : "Unknown error.")
-        }
-    } catch (error) {
-        console.log("\nTVSeries translation request error occured", translationsTVAPI, error);
-
-        if (trailersResult != undefined && translationResult != null && translationResult["status_code"] != null && translationResult["status_code"] == 11) {
             console.log("Internal Error, waiting for 5s.");
             await sleep(5000);
         } else {
@@ -286,30 +256,6 @@ async function getTVSeries(tvID) {
             }
         }
 
-        const translationsJson = translationResult['translations'].filter( translation =>
-            translation["english_name"] == "Turkish" ||
-            translation["english_name"] == "Arabic" ||
-            translation["english_name"] == "Spanish" ||
-            translation["english_name"] == "French" ||
-            translation["english_name"] == "Russian" ||
-            translation["english_name"] == "German" ||
-            translation["english_name"] == "Japanese" ||
-            translation["english_name"] == "Korean" ||
-            translation["english_name"] == "Mandarin" ||
-            translation["english_name"] == "Portuguese"
-        );
-        const translationsList = [];
-        for (let index = 0; index < translationsJson.length; index++) {
-            const item = translationsJson[index];
-            translationsList.push({
-                lan_code: item['iso_3166_1'],
-                lan_name: item['name'],
-                lan_name_en: item['english_name'],
-                title: item['data']['name'],
-                description: item['data']['overview'],
-            });
-        }
-
         var backdropImage = null
         if (result['backdrop_path'] != null && result['backdrop_path'] != undefined) {
             backdropImage = result['backdrop_path'];
@@ -343,7 +289,6 @@ async function getTVSeries(tvID) {
             networks: networkList,
             seasons: seasonList,
             actors: creditsList,
-            translations: translationsList,
             created_at: new Date(),
         });
 
@@ -411,7 +356,6 @@ async function getUpcomingMovies() {
 
 async function getMovies(movieID) {
     const movieAPI = `${tmdbBaseMovieAPIURL}${movieID}?api_key=${tmdbAPIKey}&language=en-US`;
-    const translationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/translations?api_key=${tmdbAPIKey}&language=en-US`;
     const streamingMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/watch/providers?api_key=${tmdbAPIKey}&language=en-US`;
     const creditsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/credits?api_key=${tmdbAPIKey}&language=en-US`;
     const recommendationsMovieAPI = `${tmdbBaseMovieAPIURL}${movieID}/recommendations?api_key=${tmdbAPIKey}&language=en-US`;
@@ -426,12 +370,6 @@ async function getMovies(movieID) {
 
     let streamingRequest = new Request(
         streamingMovieAPI, {
-            method: 'GET',
-        }
-    );
-
-    let translationRequest = new Request(
-        translationsMovieAPI, {
             method: 'GET',
         }
     );
@@ -503,27 +441,6 @@ async function getMovies(movieID) {
     }
 
     await sleep(1000);
-
-    let translationResult;
-    try {
-        translationResult = await fetch(translationRequest).then((response) => {
-            return response.json();
-        });
-
-        if (translationResult['success'] != null) {
-            throw Error(translationResult["status_message"] != null ? translationResult["status_message"] : "Unknown error.")
-        }
-    } catch (error) {
-        console.log("\nMovie translations request error occured", translationsMovieAPI, error);
-
-        if (translationResult != undefined && translationResult != null && translationResult["status_code"] != null && translationResult["status_code"] == 11) {
-            console.log("Internal Error, waiting for 5s.");
-            await sleep(5000);
-        } else {
-            await sleep(1500);
-        }
-        return await getMovies(movieID);
-    }
 
     await sleep(1000);
 
@@ -652,30 +569,6 @@ async function getMovies(movieID) {
             }
         }
 
-        const translationsJson = translationResult['translations'].filter( translation =>
-            translation["english_name"] == "Turkish" ||
-            translation["english_name"] == "Arabic" ||
-            translation["english_name"] == "Spanish" ||
-            translation["english_name"] == "French" ||
-            translation["english_name"] == "Russian" ||
-            translation["english_name"] == "German" ||
-            translation["english_name"] == "Japanese" ||
-            translation["english_name"] == "Korean" ||
-            translation["english_name"] == "Mandarin" ||
-            translation["english_name"] == "Portuguese"
-        );
-        const translationsList = [];
-        for (let index = 0; index < translationsJson.length; index++) {
-            const item = translationsJson[index];
-            translationsList.push({
-                lan_code: item['iso_3166_1'],
-                lan_name: item['name'],
-                lan_name_en: item['english_name'],
-                title: item['data']['title'],
-                description: item['data']['overview'],
-            });
-        }
-
         var backdropImage = null
         if (result['backdrop_path'] != null && result['backdrop_path'] != undefined) {
             backdropImage = result['backdrop_path']
@@ -712,7 +605,6 @@ async function getMovies(movieID) {
             recommendations: parseMovieRecommendationJsonData(recommendationsResult),
             streaming: parseStreamingJsonData(streamingResult),
             actors: creditsList,
-            translations: translationsList,
             created_at: new Date(),
         })
 

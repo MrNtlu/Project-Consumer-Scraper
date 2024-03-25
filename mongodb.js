@@ -43,14 +43,6 @@ const actorSchema = mongoose.Schema({
     tmdb_id: String,
 },{ _id : false });
 
-const translationSchema = mongoose.Schema({
-    lan_code: String,
-    lan_name: String,
-    lan_name_en: String,
-    title: String,
-    description: String,
-},{ _id : false });
-
 const recommendationSchema = mongoose.Schema({
     tmdb_id: String,
     title_en: String,
@@ -90,7 +82,6 @@ const MovieModel = mongoose.model(
         recommendations: [recommendationSchema],
         streaming: [streamingSchema],
         actors: [actorSchema],
-        translations: [translationSchema],
         created_at: Date,
     }, {
         versionKey: false
@@ -131,7 +122,6 @@ const TVSeriesModel = mongoose.model(
             },{ _id : false })
         ],
         actors: [actorSchema],
-        translations: [translationSchema],
         created_at: Date,
     }, {
         versionKey: false
