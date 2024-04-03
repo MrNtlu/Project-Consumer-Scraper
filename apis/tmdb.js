@@ -770,10 +770,12 @@ function parseStreamingJsonData(result) {
 
         Object.keys(jsonData).forEach(function(key) {
             if (
+                key == "AE" ||
                 key == "AT" ||
                 key == "AU" ||
                 key == "AZ" ||
                 key == "BE" ||
+                key == "BR" ||
                 key == "CA" ||
                 key == "CH" ||
                 key == "DE" ||
@@ -784,6 +786,8 @@ function parseStreamingJsonData(result) {
                 key == "GB" ||
                 key == "HK" ||
                 key == "IN" ||
+                key == "IT" ||
+                key == "JP" ||
                 key == "KR" ||
                 key == "MX" ||
                 key == "NL" ||
@@ -795,7 +799,8 @@ function parseStreamingJsonData(result) {
                 key == "SE" ||
                 key == "TR" ||
                 key == "TW" ||
-                key == "US"
+                key == "US" ||
+                key == "VN"
             ) {
                 const data = jsonData[key];
 
