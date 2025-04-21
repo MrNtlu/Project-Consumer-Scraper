@@ -63,8 +63,8 @@ async function extractFile(filePath) {
     })
 }
 
-const movieThreshold = 10;
-const tvThreshold = 20;
+const movieThreshold = 5;
+const tvThreshold = 10;
 
 async function readFile(filePath, isMovie) {
     console.log("Reading file", filePath);
@@ -82,7 +82,27 @@ async function readFile(filePath, isMovie) {
             if (parsedNdJsonList[index].popularity > movieThreshold) {
                 const movieModel = await GetMovies(parsedNdJsonList[index].id);
 
-                if (movieModel != null && (movieModel.status == "Released" && movieModel.release_date != "")) {
+                if (
+                    movieModel != null &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.production_companies.some(e => e.origin_country === "PH")
+                    ) &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.production_companies.some(e => e.origin_country === "IN")
+                    ) &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.production_companies.some(e => e.origin_country === "")
+                    ) &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.genres.some(e => e.name === "Drama") &&
+                        movieModel.genres.length == 2
+                    ) &&
+                    (movieModel.status == "Released" && movieModel.release_date != "")
+                ) {
                     movieList.push(movieModel);
                 }
 
@@ -106,7 +126,26 @@ async function readFile(filePath, isMovie) {
             if (movieList.find(movie => movie.id == element.toString()) == undefined) {
                 const movieModel = await GetMovies(upcomingMovieList[index]);
 
-                if (movieModel != null) {
+                if (
+                    movieModel != null &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.production_companies.some(e => e.origin_country === "PH")
+                    ) &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.production_companies.some(e => e.origin_country === "IN")
+                    ) &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.production_companies.some(e => e.origin_country === "")
+                    ) &&
+                    !(
+                        movieModel.genres.some(e => e.name === "Romance") &&
+                        movieModel.genres.some(e => e.name === "Drama") &&
+                        movieModel.genres.length == 2
+                    )
+                ) {
                     upcomingMovieIDList.push(movieModel);
                 }
             }

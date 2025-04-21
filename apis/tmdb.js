@@ -12,7 +12,7 @@ const month = (today.getUTCMonth() + 1 < 10) ? '0' + (today.getUTCMonth() + 1) :
 const day = (today.getUTCDate() < 10) ? '0' + today.getUTCDate() : today.getUTCDate();
 const year = today.getUTCFullYear();
 
-const upcomingPopularityThreshold = 19;
+const upcomingPopularityThreshold = 10;
 
 async function getTVSeries(tvID) {
     const tvAPI = `${tmdbBaseTVSeriesAPIURL}${tvID}?api_key=${tmdbAPIKey}&language=en-US`;
@@ -335,7 +335,9 @@ async function getUpcomingMovies() {
         for (let index = 0; index < data.length; index++) {
             const item = data[index];
 
-            if (item['popularity'] > upcomingPopularityThreshold) {
+            if (
+                item['popularity'] > upcomingPopularityThreshold
+            ) {
                 movieIDList.push(item['id']);
             }
         }

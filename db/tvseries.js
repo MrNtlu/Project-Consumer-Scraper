@@ -15,7 +15,7 @@ const year = today.getUTCFullYear();
 const tvSeriesDownloadURL = `tv_series_ids_${month}_${day}_${year}${tmdbFileExtension}`;
 const downloadFolder = "downloads"
 
-const popularityThreshold = 25;
+const popularityThreshold = 20;
 
 async function startTVFileDownload() {
     if (fs.existsSync(downloadFolder)) {
