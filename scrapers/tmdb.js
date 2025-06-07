@@ -102,6 +102,29 @@ async function readFile(filePath, isMovie) {
                         movieModel.genres.length == 2
                     ) &&
                     (movieModel.status == "Released" && movieModel.release_date != "")
+                    &&
+                    !(
+                        movieModel.genres.length == 0 &&
+                        movieModel.production_companies.some(e => e.origin_country === "JP")
+                    )
+                    &&
+                    !(
+                        movieModel.genres.length == 1 &&
+                        movieModel.genres.some(e => e.name === "Drama") &&
+                        movieModel.production_companies.some(e => e.origin_country === "JP")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Nikkatsu Corporation")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Itami Productions")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Pink Pineapple")
+                    )
                 ) {
                     movieList.push(movieModel);
                 }
@@ -144,6 +167,29 @@ async function readFile(filePath, isMovie) {
                         movieModel.genres.some(e => e.name === "Romance") &&
                         movieModel.genres.some(e => e.name === "Drama") &&
                         movieModel.genres.length == 2
+                    )
+                    &&
+                    !(
+                        movieModel.genres.length == 0 &&
+                        movieModel.production_companies.some(e => e.origin_country === "JP")
+                    )
+                    &&
+                    !(
+                        movieModel.genres.length == 1 &&
+                        movieModel.genres.some(e => e.name === "Drama") &&
+                        movieModel.production_companies.some(e => e.origin_country === "JP")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Nikkatsu Corporation")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Itami Productions")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Pink Pineapple")
                     )
                 ) {
                     upcomingMovieIDList.push(movieModel);
@@ -211,7 +257,7 @@ async function insertMovies(movieList, isUpcoming) {
 
         movieList[index] = {
             'updateOne': {
-                'filter': {'tmdb_id': element.tmdb_id},
+                'filter': { 'tmdb_id': element.tmdb_id },
                 'update': {
                     "$set": {
                         title_original: element.title_original,
@@ -245,7 +291,7 @@ async function insertMovies(movieList, isUpcoming) {
     try {
         await MovieModel.bulkWrite(movieList);
         console.log(`Inserted ${isUpcoming ? "upcoming" : ""} ${movieList.length} number of items to Movie DB.`);
-    } catch(error) {
+    } catch (error) {
         console.log("Movie Insert error", error);
     }
 }
@@ -258,7 +304,7 @@ async function insertTVSeries(tvSeriesList) {
 
         tvSeriesList[index] = {
             'updateOne': {
-                'filter': {'tmdb_id': element.tmdb_id},
+                'filter': { 'tmdb_id': element.tmdb_id },
                 'update': {
                     "$set": {
                         title_original: element.title_original,
@@ -294,7 +340,7 @@ async function insertTVSeries(tvSeriesList) {
     try {
         await TVSeriesModel.bulkWrite(tvSeriesList);
         console.log(`Inserted ${tvSeriesList.length} number of items to TVSeries DB.`);
-    } catch(error) {
+    } catch (error) {
         console.log("TV Insert error", error);
     }
 }
