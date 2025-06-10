@@ -89,6 +89,13 @@ async function readFile(filePath, isMovie) {
                         movieModel.production_companies.some(e => e.origin_country === "PH")
                     ) &&
                     !(
+                        movieModel.genres.some(e => e.name === "Drama") &&
+                        movieModel.production_companies.some(e => e.origin_country === "PH")
+                    ) &&
+                    !(
+                       movieModel.production_companies.length == 0
+                    ) &&
+                    !(
                         movieModel.genres.some(e => e.name === "Romance") &&
                         movieModel.production_companies.some(e => e.origin_country === "IN")
                     ) &&
@@ -124,6 +131,14 @@ async function readFile(filePath, isMovie) {
                     &&
                     !(
                         movieModel.production_companies.some(e => e.name === "Pink Pineapple")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Lust Cinema")
+                    )
+                    &&
+                    !(
+                        movieModel.production_companies.some(e => e.name === "Blueframe Films")
                     )
                 ) {
                     movieList.push(movieModel);
